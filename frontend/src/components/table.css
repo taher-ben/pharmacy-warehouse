@@ -1,0 +1,22 @@
+.action{
+    cursor: pointer;
+    display: flex;
+  }
+  .delete-btn{
+    color: rgb(142, 159, 207);
+  }
+  
+  
+  /* Adjust the margin to separate the navbar from the table */
+  .navbar {
+    margin-bottom: 8%;
+  }
+  
+  
+  .table-container{
+    max-height: calc(100vh - 200px); /* Adjust as needed based on footer height */
+      overflow-y: auto;
+  }
+  
+  
+  
