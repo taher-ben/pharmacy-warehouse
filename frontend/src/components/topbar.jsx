@@ -1,26 +1,28 @@
-import React, { useState } from 'react';
+// import React, { useState } from 'react';
 
 const Topbar = ({ onSearch }) => {
-  const [searchTerm, setSearchTerm] = useState('');
+  // const [searchTerm, setSearchTerm] = useState('');
 
-  const handleSearchChange = (event) => {
-    setSearchTerm(event.target.value);
-    onSearch(event.target.value); // Send search term to the parent component
-  };
+  // const handleSearchChange = (event) => {
+  //   setSearchTerm(event.target.value);
+  //   onSearch(event.target.value); // Send search term to the parent component
+  // };
 
   return (
-    <div className="navbar navbar-light bg-light d-flex justify-content-between px-3">
-      <form className="form-inline">
+    <div dir='rtl' className="navbar navbar-light bg-light d-flex justify-content-between px-3">
+      {/* <form className="form-inline">
         <input 
           className="form-control mr-sm-2" 
           type="search" 
-          placeholder="Search for products..." 
+          placeholder="ابحث عن المنتجات..." 
           aria-label="Search" 
           value={searchTerm}
           onChange={handleSearchChange}
         />
-      </form>
-      <span>Welcome, Admin</span>
+      </form> */}
+      <div>
+      <span>المسؤول الرئيسي</span>
+      </div>
     </div>
   );
 };

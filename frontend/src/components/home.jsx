@@ -123,7 +123,7 @@ function Home() {
     };
 
     return (
-        <div className="home-container d-flex">
+        <div  dir="rtl" className="home-container d-flex ">
             <Sidebar />
             <div className="content flex-grow-1 d-flex flex-column mx-2">
                 <Topbar />

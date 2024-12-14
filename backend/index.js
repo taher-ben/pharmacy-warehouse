@@ -81,11 +81,11 @@ app.get("/api/suppliers", (req, res) => {
 
 // Add a new product to the database
 app.post("/api/products/add", (req, res) => {
-    const { name, category_id, supplier_id, unit_price, quantity_in_stock, minimum_stock_level, expiry_date, barcode } = req.body;
+    const { name, category_id, supplier_id, unit_price, quantity_in_stock, minimum_stock_level, expiry_date, barcode,current_stock } = req.body;
   
     const query = `
-      INSERT INTO products (name, category_id, supplier_id, unit_price, quantity_in_stock, minimum_stock_level, expiry_date, barcode) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO products (name, category_id, supplier_id, unit_price, quantity_in_stock, minimum_stock_level, expiry_date, barcode,current_stock) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?,?)
     `;
   
     const values = [
@@ -97,6 +97,7 @@ app.post("/api/products/add", (req, res) => {
       minimum_stock_level,
       expiry_date,
       barcode,
+      quantity_in_stock,
     ];
   
     db.query(query, values, (err, result) => {
@@ -136,6 +137,7 @@ app.delete("/api/products/delete/:id", (req, res) => {
   // Edit Product Endpoint
 app.put("/api/products/edit/:id", (req, res) => {
     const productId = req.params.id;
+    const { barcode } = req.query; 
     const {
       name,
       category_id,
@@ -191,6 +193,7 @@ app.put("/api/products/edit/:id", (req, res) => {
         });
       }
     });
+    updateCurrentStock(barcode); 
   });
 
 
@@ -313,6 +316,28 @@ app.post("/api/categories/add", (req, res) => {
       res.json(results[0]);
     });
   });
+
+  // Search products by name
+app.get("/api/products", (req, res) => {
+  const { name } = req.query;
+
+  if (!name) {
+    return res.status(400).json({ error: "Product name is required." });
+  }
+
+  const query = "SELECT * FROM products WHERE name LIKE ?";
+  db.query(query, [`%${name}%`], (err, results) => {
+    if (err) {
+      console.error("Error searching product by name:", err);
+      res.status(500).json({ error: "Error searching product by name." });
+    } else if (results.length === 0) {
+      res.status(404).json({ error: "No products found with the given name." });
+    } else {
+      res.json(results);
+    }
+  });
+});
+
   
   
   app.put("/api/scanned_products/:id", (req, res) => {
@@ -377,17 +402,18 @@ app.post("/api/scanned_products", (req, res) => {
     const { name } = req.query;
     const query = "SELECT * FROM products WHERE name LIKE ?";
     db.query(query, [`%${name}%`], (err, results) => {
-      if (err) {
-        console.error("Error fetching product by name:", err);
-        return res.status(500).send("Server error");
-      }
-      if (results.length > 0) {
-        res.json(results[0]);
-      } else {
-        res.status(404).send("Product not found.");
-      }
+        if (err) {
+            console.error("Error fetching products by name:", err);
+            return res.status(500).send("Server error");
+        }
+        if (results.length > 0) {
+            res.json(results); // Send all matching products
+        } else {
+            res.status(404).send("No products found.");
+        }
     });
-  });
+});
+
   
   app.get("/api/suppliers", (req, res) => {
     db.query("SELECT * FROM suppliers", (err, results) => {

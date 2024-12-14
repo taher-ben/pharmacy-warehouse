@@ -3,28 +3,32 @@ import Sidebar from "./sidebar";
 import Topbar from "./topbar";
 import API from "../services/api";
 import { Modal, Button, Form } from "react-bootstrap";
-import { BrowserMultiFormatReader } from "@zxing/library"; // Import ZXing library
 
 const Outgoing = () => {
-  const [scannedProducts, setScannedProducts] = useState([]); // State for scanned products
-  const [categories, setCategories] = useState([]); // State to store categories
+  const [scannedProducts, setScannedProducts] = useState([]); // حالة للمنتجات الممسوحة
+  const [categories, setCategories] = useState([]); // حالة لتخزين الفئات
   const [isLoading, setIsLoading] = useState(true);
-  const [showBarcodeModal, setShowBarcodeModal] = useState(false); // Barcode scan modal state
-  const [showProductModal, setShowProductModal] = useState(false); // Product details modal state
-  const [scanStatus, setScanStatus] = useState(""); // Scan status message
-  const [productDetails, setProductDetails] = useState(null); // Scanned product details
-  const [editProduct, setEditProduct] = useState(null); // Edit product modal state
+  const [showBarcodeModal, setShowBarcodeModal] = useState(false); // حالة مودال مسح الباركود
+  const [showProductModal, setShowProductModal] = useState(false); // حالة مودال تفاصيل المنتج
+  const [ShowProductModal, SetShowProductModal] = useState(false);
+  const [scanStatus, setScanStatus] = useState(""); // رسالة حالة المسح
+  const [productDetails, setProductDetails] = useState(null); // تفاصيل المنتج الممسوح
+  const [editProduct, setEditProduct] = useState(null); // حالة مودال تعديل المنتج
   const [errorMessage, setErrorMessage] = useState("");
-  const videoRef = useRef(null); // Reference for the video element
+  const barcodeRef = useRef(""); // مرجع لتخزين قيمة الباركود الممسوح
+  const [searchTerm, setSearchTerm] = useState("");
+  const [matchingProducts, setMatchingProducts] = useState([]);
 
-  // Fetch scanned products and categories on component mount
+  const SCAN_TIMEOUT = 300;
+
+  // جلب المنتجات الممسوحة والفئات عند تحميل المكون
   useEffect(() => {
     const fetchScannedProducts = async () => {
       try {
         const response = await API.get("/scanned_products");
         setScannedProducts(response.data);
       } catch (error) {
-        console.error("Error fetching scanned products:", error);
+        console.error("خطأ في جلب المنتجات الممسوحة:", error);
       }
     };
 
@@ -33,7 +37,7 @@ const Outgoing = () => {
         const response = await API.get("/categories");
         setCategories(response.data);
       } catch (error) {
-        console.error("Error fetching categories:", error);
+        console.error("خطأ في جلب الفئات:", error);
       }
     };
 
@@ -42,148 +46,187 @@ const Outgoing = () => {
     setIsLoading(false);
   }, []);
 
-  // Handle barcode scanning logic
-  const handleScan = async (result) => {
-    if (result) {
+  // معالجة منطق مسح الباركود
+  const processScan = async (barcode) => {
+    if (barcode) {
       try {
-        const barcode = result.text; // Extract the barcode from the scanned result
-        const response = await API.get(`/products/${barcode}`); // Fetch product details
+        const response = await API.get(`/products/${barcode}`); // جلب تفاصيل المنتج
 
         if (response.data) {
-          setProductDetails({
-            barcode: barcode,
-            name: response.data.name,
-            expiryDate: response.data.expiry_date,
-            quantity: 1, // Default quantity
-          });
-          setShowProductModal(true); // Show the product details modal
+          // تخزين المنتج في matchingProducts
+          setMatchingProducts([
+            ...matchingProducts,
+            {
+              barcode: barcode,
+              name: response.data.name,
+              expiryDate: response.data.expiry_date,
+              quantity: 1, // الكمية الافتراضية
+            },
+          ]);
+          setShowProductModal(true); // عرض مودال تفاصيل المنتج
         } else {
-          setScanStatus("Product not found in the database.");
+          setScanStatus("المنتج غير موجود في قاعدة البيانات.");
         }
-        setShowBarcodeModal(false); // Close barcode scanning modal
+        setShowBarcodeModal(false); // إغلاق مودال مسح الباركود
       } catch (error) {
-        console.error("Error fetching product details:", error);
-        setScanStatus("Error fetching product details. Please try again.");
+        console.error("خطأ في جلب تفاصيل المنتج:", error);
+        setScanStatus("حدث خطأ أثناء جلب تفاصيل المنتج. الرجاء المحاولة مرة أخرى.");
       }
     } else {
-      setScanStatus("No barcode detected. Please try again.");
+      setScanStatus("لم يتم اكتشاف أي باركود. الرجاء المحاولة مرة أخرى.");
     }
   };
 
   const handleError = (err) => {
-    console.error("Barcode Scan Error: ", err);
-    setScanStatus("Error scanning. Please check your camera or barcode.");
+    console.error("خطأ في مسح الباركود: ", err);
+    setScanStatus("خطأ في المسح. الرجاء التحقق من الكاميرا أو الباركود.");
   };
 
-  // Start barcode scanning when the modal is shown
-  useEffect(() => {
-    if (showBarcodeModal) {
-      const codeReader = new BrowserMultiFormatReader();
-      codeReader
-        .decodeFromVideoDevice(null, videoRef.current, (result, err) => {
-          if (result) {
-            handleScan(result);
-          }
-          if (err) {
-            handleError(err);
-          }
-        })
-        .catch((err) => {
-          handleError(err);
-        });
+  const scanTimeoutRef = useRef(null); // مرجع لإدارة مهلة المسح
 
-      return () => {
-        codeReader.reset(); // Clean up when the modal is closed
-      };
-    }
+  // معالجة أحداث الضغط على لوحة المفاتيح لإدخال ماسح الباركود
+  useEffect(() => {
+    const handleKeyPress = (event) => {
+      if (showBarcodeModal) {
+        if (event.key === "Enter") {
+          event.preventDefault(); // منع زر الإدخال من المعالجة
+          return;
+        }
+        // مسح المهلة السابقة إذا كانت لا تزال نشطة
+        clearTimeout(scanTimeoutRef.current);
+
+        // إضافة المفتاح الحالي إلى حالة الباركود الممسوح
+        barcodeRef.current += event.key;
+
+        // تعيين مهلة جديدة لمعالجة الباركود بعد توقف
+        scanTimeoutRef.current = setTimeout(() => {
+          processScan(barcodeRef.current); // استخدام barcodeRef بدلاً من الحالة
+          barcodeRef.current = ""; // مسح barcodeRef للمسح التالي
+        }, SCAN_TIMEOUT);
+      }
+    };
+
+    // إضافة مستمع للأحداث على keydown (إدخال ماسح الباركود)
+    window.addEventListener("keydown", handleKeyPress);
+
+    // تنظيف مستمع الأحداث عند إلغاء تحميل المكون
+    return () => {
+      window.removeEventListener("keydown", handleKeyPress);
+      clearTimeout(scanTimeoutRef.current); // مسح المهلة عند الإلغاء
+    };
   }, [showBarcodeModal]);
 
-  // Handle editing a product
+  // معالجة تعديل المنتج
   const handleEdit = (product) => {
     setEditProduct(product);
   };
 
-  // Save edits
+  // حفظ التعديلات
   const saveEdit = async () => {
     try {
       await API.put(`/scanned_products/${editProduct.id}`, editProduct);
-      alert("Product updated successfully!");
+      alert("تم تحديث المنتج بنجاح!");
       setEditProduct(null);
       const updatedProducts = await API.get("/scanned_products");
       setScannedProducts(updatedProducts.data);
     } catch (error) {
-      console.error("Error updating product:", error);
-      setErrorMessage("Failed to update the product.");
+      console.error("خطأ أثناء تحديث المنتج:", error);
+      setErrorMessage("فشل تحديث المنتج.");
     }
   };
 
- // Handle deleting a product
-const handleDelete = async (id, barcode) => {
-    if (window.confirm("Are you sure you want to delete this product?")) {
+  // معالجة حذف المنتج
+  const handleDelete = async (id, barcode) => {
+    if (window.confirm("هل أنت متأكد أنك تريد حذف هذا المنتج؟")) {
       try {
-        // Send a DELETE request with barcode as a query parameter
+        // إرسال طلب DELETE مع الباركود كمعامل استعلام
         await API.delete(`/scanned_products/${id}?barcode=${barcode}`);
-        
-        // Update the state to remove the deleted product
-        setScannedProducts(scannedProducts.filter((product) => product.id !== id));
+
+        // تحديث الحالة لإزالة المنتج المحذوف
+        setScannedProducts(
+          scannedProducts.filter((product) => product.id !== id)
+        );
       } catch (error) {
-        console.error("Error deleting product:", error);
+        console.error("خطأ أثناء حذف المنتج:", error);
       }
     }
   };
-  
 
- // Function to save the scanned product (i.e., add a new scan to the database)
-const saveScannedProduct = async () => {
+  // وظيفة لحفظ المنتج الممسوح (أي إضافة مسح جديد إلى قاعدة البيانات)
+  const saveScannedProduct = async () => {
     try {
-      // Send a POST request to add the new scan to the database
+      // إرسال طلب POST لإضافة المسح الجديد إلى قاعدة البيانات
       const response = await API.post("/scanned_products", {
-        barcode: productDetails.barcode, // Assuming productDetails includes barcode
-        quantity: productDetails.quantity, // Send the quantity from product details
-        scanned_at: new Date(), // Optionally, send the scan timestamp
+        barcode: productDetails.barcode, // يفترض أن productDetails يتضمن الباركود
+        quantity: productDetails.quantity, // إرسال الكمية من تفاصيل المنتج
+        scanned_at: new Date(), // اختيارياً، إرسال توقيت المسح
       });
-  
-      alert("Product added successfully!");
-      setShowProductModal(false); // Close the modal
-  
-      // Optionally, refresh the list of products if needed
+
+      alert("تم إضافة المنتج بنجاح!");
+      SetShowProductModal(false); // إغلاق المودال
+
+      // اختيارياً، تحديث قائمة المنتجات إذا لزم الأمر
       const updatedProducts = await API.get("/scanned_products");
-      setScannedProducts(updatedProducts.data); // Update the list of scanned products
+      setScannedProducts(updatedProducts.data); // تحديث قائمة المنتجات الممسوحة
     } catch (error) {
-      console.error("Error adding product:", error);
-      setErrorMessage("Failed to add the product.");
+      console.error("خطأ أثناء إضافة المنتج:", error);
+      setErrorMessage("فشل إضافة المنتج.");
     }
   };
-  
-  
+
+  const handleNameSearch = async () => {
+    try {
+      const response = await API.get(`/products_name?name=${searchTerm}`);
+      if (response.data && response.data.length > 0) {
+        setMatchingProducts(response.data); // تخزين جميع المنتجات المطابقة
+        setShowProductModal(true); // عرض المودال لاختيار المستخدم
+      } else {
+        alert("لم يتم العثور على منتجات بالاسم المحدد.");
+      }
+    } catch (error) {
+      console.error("خطأ أثناء البحث عن المنتجات بالاسم:", error);
+      alert("حدث خطأ أثناء البحث عن المنتجات.");
+    }
+  };
 
   return (
-    <div className="p-container d-flex">
+    <div  dir="rtl" className="p-container d-flex ">
       <Sidebar />
       <div className="content flex-grow-1 d-flex flex-column mx-2">
         <Topbar />
         <div className="p-3">
           <Button className="mb-3" onClick={() => setShowBarcodeModal(true)}>
-            Scan Product Barcode
+            مسح باركود المنتج
           </Button>
+          <div className="mb-3">
+            <Form.Control
+              type="text"
+              placeholder="البحث باسم المنتج"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <Button className="mt-2" onClick={handleNameSearch}>
+              بحث
+            </Button>
+          </div>
           {isLoading ? (
-            <p>Loading scanned products...</p>
+            <p>جارٍ تحميل المنتجات الممسوحة...</p>
           ) : (
             <table className="table table-hover">
               <thead>
                 <tr>
-                  <th scope="col">ID</th>
-                  <th scope="col">Barcode</th>
-                  <th scope="col">Product Name</th>
-                  <th scope="col">Scan Time</th>
-                  <th scope="col">Amount</th>
-                  <th scope="col">Actions</th>
+                  <th scope="col">المعرف</th>
+                  <th scope="col">الباركود</th>
+                  <th scope="col">اسم المنتج</th>
+                  <th scope="col">وقت المسح</th>
+                  <th scope="col">الكمية</th>
+                  <th scope="col">الإجراءات</th>
                 </tr>
               </thead>
               <tbody>
                 {scannedProducts.length === 0 ? (
                   <tr>
-                    <td colSpan="5">No scanned products found.</td>
+                    <td colSpan="5">لم يتم العثور على منتجات ممسوحة.</td>
                   </tr>
                 ) : (
                   scannedProducts.map((product) => (
@@ -191,14 +234,26 @@ const saveScannedProduct = async () => {
                       <td>{product.id}</td>
                       <td>{product.barcode}</td>
                       <td>{product.product_name}</td>
-                      <td>{new Date(product.scanned_at).toLocaleDateString("en-GB")}</td>
+                      <td>
+                        {new Date(product.scanned_at).toLocaleDateString(
+                          "ar-EG"
+                        )}
+                      </td>
                       <td>{product.quantity}</td>
                       <td>
-                        <Button variant="warning" onClick={() => handleEdit(product)}>
-                          Edit
+                        <Button
+                          variant="warning"
+                          onClick={() => handleEdit(product)}
+                        >
+                          تعديل
                         </Button>{" "}
-                        <Button variant="danger" onClick={() => handleDelete(product.id, product.barcode)}>
-                          Delete
+                        <Button
+                          variant="danger"
+                          onClick={() =>
+                            handleDelete(product.id, product.barcode)
+                          }
+                        >
+                          حذف
                         </Button>
                       </td>
                     </tr>
@@ -210,67 +265,86 @@ const saveScannedProduct = async () => {
         </div>
       </div>
 
-      {/* Modal for Barcode Scanning */}
+      {/* مودال لمسح الباركود */}
       <Modal show={showBarcodeModal} onHide={() => setShowBarcodeModal(false)}>
         <Modal.Header closeButton>
-          <Modal.Title>Scan Product Barcode</Modal.Title>
+          <Modal.Title>مسح باركود المنتج</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <video ref={videoRef} style={{ width: "100%" }} id="video" autoPlay playsInline></video>
           <div className="mt-2">
             <strong>{scanStatus}</strong>
           </div>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowBarcodeModal(false)}>
-            Close
+          <Button
+            variant="secondary"
+            onClick={() => setShowBarcodeModal(false)}
+          >
+            إغلاق
           </Button>
         </Modal.Footer>
       </Modal>
 
-      {/* Modal for Product Details */}
-<Modal show={showProductModal} onHide={() => setShowProductModal(false)}>
-  <Modal.Header closeButton>
-    <Modal.Title>Product Details</Modal.Title>
-  </Modal.Header>
-  <Modal.Body>
-    {productDetails ? (
-      <div>
-        <p><strong>Name:</strong> {productDetails.name}</p>
-        <p><strong>Expiry Date:</strong> {new Date(productDetails.expiryDate).toLocaleDateString("en-GB")}</p>
-        <p><strong>Quantity:</strong>
-          <input
-            type="number"
-            value={productDetails.quantity || 1} 
-            onChange={(e) => setProductDetails({ ...productDetails, quantity: parseInt(e.target.value) })} // Update quantity
-            min="1" // Prevent the user from entering less than 1
-            style={{ width: "100px" }} // Adjust input width for better presentation
-          />
-        </p>
-      </div>
-    ) : (
-      <p>No product details available.</p>
-    )}
-  </Modal.Body>
-  <Modal.Footer>
-    <Button variant="primary" onClick={saveScannedProduct}>
-      Save Changes
-    </Button>
-    <Button variant="secondary" onClick={() => setShowProductModal(false)}>
-      Close
-    </Button>
-  </Modal.Footer>
-</Modal>
+      {/* مودال لتفاصيل المنتج */}
+      <Modal show={ShowProductModal} onHide={() => SetShowProductModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>تفاصيل المنتج</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {productDetails ? (
+            <div>
+              <p>
+                <strong>الاسم:</strong> {productDetails.name}
+              </p>
+              <p>
+                <strong>تاريخ انتهاء الصلاحية:</strong>{" "}
+                {new Date(productDetails.expiryDate).toLocaleDateString(
+                  "ar-EG"
+                )}
+              </p>
+              <p>
+                <strong>الكمية:</strong>
+                <input
+                  type="number"
+                  value={productDetails.quantity || 1}
+                  onChange={(e) =>
+                    setProductDetails({
+                      ...productDetails,
+                      quantity: parseInt(e.target.value),
+                    })
+                  } // تحديث الكمية
+                  min="1" // منع إدخال أقل من 1
+                  style={{ width: "100px" }} // ضبط عرض الحقل
 
-      {/* Modal for Editing a Product */}
+                  />
+              </p>
+            </div>
+          ) : (
+            <p>لا توجد تفاصيل للمنتج متوفرة.</p>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="primary" onClick={saveScannedProduct}>
+            حفظ التغييرات
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={() => SetShowProductModal(false)}
+          >
+            إغلاق
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* نافذة تعديل المنتج */}
       <Modal show={!!editProduct} onHide={() => setEditProduct(null)}>
         <Modal.Header closeButton>
-          <Modal.Title>Edit Product</Modal.Title>
+          <Modal.Title>تعديل المنتج</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form>
             <Form.Group className="mb-3">
-              <Form.Label>Quantity</Form.Label>
+              <Form.Label>الكمية</Form.Label>
               <Form.Control
                 type="number"
                 value={editProduct?.quantity || ""}
@@ -280,14 +354,64 @@ const saveScannedProduct = async () => {
               />
             </Form.Group>
           </Form>
-          {errorMessage && <div className="alert alert-danger mt-3">{errorMessage}</div>}
+          {errorMessage && (
+            <div className="alert alert-danger mt-3">{errorMessage}</div>
+          )}
         </Modal.Body>
         <Modal.Footer>
           <Button variant="primary" onClick={saveEdit}>
-            Save Changes
+            حفظ التغييرات
           </Button>
           <Button variant="secondary" onClick={() => setEditProduct(null)}>
-            Close
+            إغلاق
+          </Button>
+        </Modal.Footer>
+      </Modal>
+      {/* نافذة اختيار المنتج */}
+      <Modal show={showProductModal} onHide={() => setShowProductModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>اختر منتجًا</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {matchingProducts.length > 0 ? (
+            <ul>
+              {matchingProducts.map((product, index) => (
+                <li
+                  key={product.barcode}
+                  style={{ cursor: "pointer", marginBottom: "10px" }}
+                  onClick={() => {
+                    // تعيين تفاصيل المنتج
+                    setProductDetails({
+                      barcode: product.barcode,
+                      name: product.name,
+                      expiryDate: product.expiry_date,
+                      quantity: 1,
+                    });
+
+                    // إفراغ مصفوفة المنتجات المتطابقة
+                    setMatchingProducts([]);
+                    if(matchingProducts.length > 0)
+
+                    // إغلاق وإظهار نافذة المنتج
+                    setShowProductModal(false);
+                    SetShowProductModal(true);
+                  }}
+                >
+                  {index + 1}. {product.name} - {product.barcode} (تاريخ الانتهاء:{" "}
+                  {new Date(product.expiry_date).toLocaleDateString("en-GB")})
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>لم يتم العثور على منتجات متطابقة.</p>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={() => setShowProductModal(false)}
+          >
+            إغلاق
           </Button>
         </Modal.Footer>
       </Modal>
