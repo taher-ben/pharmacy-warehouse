@@ -1,8 +1,12 @@
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&display=swap');
-body{
-    font-family: "Cairo", sans-serif;
-
+@font-face {
+    font-family: "Cairo";
+    src: url('../../Cairo/Cairo-Regular.ttf') format('truetype');
 }
+
+body {
+    font-family: "Cairo", sans-serif;
+}
+
 .home-container {
     min-height: 100vh; /* Ensure the container spans full viewport height */
 }
@@ -31,4 +35,23 @@ body{
 /* Optional: Additional styling for smaller charts */
 .chart-column canvas {
     max-height: 350px; /* Limit the height of the charts */
+}
+.card-bodyy{
+    background-color: #00770e;
+    border-radius: 15px;
+    padding: 12px 44px;
+}
+.card-bodyy .h6{
+    font-size: x-large;
+    color: white;
+    font-weight: bold;
+    margin: auto;
+}
+.card-bodyy .h3{
+    font-size: large;
+    color: white;
+    font-weight: bold;
+}
+.box-items{
+    background-color: #00770e;
 }

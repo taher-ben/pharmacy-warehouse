@@ -70,7 +70,9 @@ const Outgoing = () => {
         setShowBarcodeModal(false); // إغلاق مودال مسح الباركود
       } catch (error) {
         console.error("خطأ في جلب تفاصيل المنتج:", error);
-        setScanStatus("حدث خطأ أثناء جلب تفاصيل المنتج. الرجاء المحاولة مرة أخرى.");
+        setScanStatus(
+          "حدث خطأ أثناء جلب تفاصيل المنتج. الرجاء المحاولة مرة أخرى."
+        );
       }
     } else {
       setScanStatus("لم يتم اكتشاف أي باركود. الرجاء المحاولة مرة أخرى.");
@@ -190,7 +192,7 @@ const Outgoing = () => {
   };
 
   return (
-    <div  dir="rtl" className="p-container d-flex ">
+    <div dir="rtl" className="p-container d-flex ">
       <Sidebar />
       <div className="content flex-grow-1 d-flex flex-column mx-2">
         <Topbar />
@@ -236,7 +238,7 @@ const Outgoing = () => {
                       <td>{product.product_name}</td>
                       <td>
                         {new Date(product.scanned_at).toLocaleDateString(
-                          "ar-EG"
+                          "en-US"
                         )}
                       </td>
                       <td>{product.quantity}</td>
@@ -299,7 +301,7 @@ const Outgoing = () => {
               <p>
                 <strong>تاريخ انتهاء الصلاحية:</strong>{" "}
                 {new Date(productDetails.expiryDate).toLocaleDateString(
-                  "ar-EG"
+                  "en-US"
                 )}
               </p>
               <p>
@@ -315,8 +317,7 @@ const Outgoing = () => {
                   } // تحديث الكمية
                   min="1" // منع إدخال أقل من 1
                   style={{ width: "100px" }} // ضبط عرض الحقل
-
-                  />
+                />
               </p>
             </div>
           ) : (
@@ -390,14 +391,14 @@ const Outgoing = () => {
 
                     // إفراغ مصفوفة المنتجات المتطابقة
                     setMatchingProducts([]);
-                    if(matchingProducts.length > 0)
-
-                    // إغلاق وإظهار نافذة المنتج
-                    setShowProductModal(false);
+                    if (matchingProducts.length > 0)
+                      // إغلاق وإظهار نافذة المنتج
+                      setShowProductModal(false);
                     SetShowProductModal(true);
                   }}
                 >
-                  {index + 1}. {product.name} - {product.barcode} (تاريخ الانتهاء:{" "}
+                  {index + 1}. {product.name} - {product.barcode} (تاريخ
+                  الانتهاء:{" "}
                   {new Date(product.expiry_date).toLocaleDateString("en-GB")})
                 </li>
               ))}

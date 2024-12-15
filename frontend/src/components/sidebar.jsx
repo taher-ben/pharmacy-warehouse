@@ -1,4 +1,9 @@
 import React, { useState } from "react";
+import { BsHouse } from "react-icons/bs";
+import { BsList } from "react-icons/bs";
+import { BsBoxArrowRight } from "react-icons/bs";
+import { BsBoxArrowInLeft } from "react-icons/bs";
+import { BsPersonLinesFill } from "react-icons/bs";
 
 const handleNavigation = (event, path) => {
   event.preventDefault();
@@ -17,7 +22,8 @@ const Sidebar = () => {
     <div dir="rtl" className="bg-dark text-white vh-100 p-3">
       <h3 className="text-center mb-4">نظام إدارة المخازن</h3>
       <ul className="nav flex-column">
-        <li className="nav-item">
+        <li className="nav-item d-flex align-items-center">
+          <BsHouse className="mx-1 fs-4" color="white" />
           <a
             href="/dashboard"
             className="nav-link text-white"
@@ -27,7 +33,8 @@ const Sidebar = () => {
           </a>
         </li>
 
-        <li className="nav-item">
+        <li className="nav-item d-flex align-items-center">
+          <BsList className="mx-1 fs-4" color="white" />
           <a
             href="/categories"
             className="nav-link text-white"
@@ -36,49 +43,28 @@ const Sidebar = () => {
             الفئات
           </a>
         </li>
-        <li>
-              <a
-                href="/products/outward"
-                className="nav-link text-white"
-                onClick={(event) => handleNavigation(event, "/outgoing")}
-              >
-                المنتجات الصادرة
-              </a>
-            </li>
-        {/* Products Dropdown */}
-        {/* <li className="nav-item dropdown">
+        <li className="nav-item d-flex align-items-center">
+          <BsBoxArrowRight className="mx-1 fs-4 center" color="white" />
           <a
-            href="/products/incoming" // Default route for Products
-            className="nav-link text-white dropdown-toggle"
-            id="navbarDropdown"
-            role="button"
-            onClick={(event) => {
-              event.preventDefault();
-              toggleProductsDropdown();
-            }}
-            data-bs-toggle="dropdown"
-            aria-expanded={showProductsDropdown ? "true" : "false"}
+            href="/products/outward"
+            className="nav-link text-white"
+            onClick={(event) => handleNavigation(event, "/outgoing")}
           >
-            المنتجات
+            المنتجات الصادرة
           </a>
-          <ul
-            className={`dropdown-menu ${showProductsDropdown ? "show" : ""}`}
-            aria-labelledby="navbarDropdown"
+        </li>
+        <li className="nav-item d-flex align-items-center">
+        <BsBoxArrowInLeft className="mx-1 fs-4 center" color="white" />
+          <a
+            href="/products/incoming"
+            className="nav-link text-white"
+            onClick={(event) => handleNavigation(event, "/products")}
           >
-
-          </ul>
-        </li> */}
-
-        <li className="nav-item">
-              <a
-                href="/products/incoming"
-                className="nav-link text-white"
-                onClick={(event) => handleNavigation(event, "/products")}
-              >
-                المنتجات الواردة
-              </a>
-            </li>
-        <li className="nav-item">
+            المنتجات الواردة
+          </a>
+        </li>
+        <li className="nav-item d-flex align-items-center">
+          <BsPersonLinesFill className="mx-1 fs-4 center" color="white" />
           <a
             href="#"
             className="nav-link text-white"
@@ -87,7 +73,7 @@ const Sidebar = () => {
             الموردون
           </a>
         </li>
-        <li className="nav-item">
+        {/* <li className="nav-item d-flex align-items-center">
           <a href="#" className="nav-link text-white">
             التقارير
           </a>
@@ -96,7 +82,7 @@ const Sidebar = () => {
           <a href="#" className="nav-link text-white">
             الإعدادات
           </a>
-        </li>
+        </li> */}
       </ul>
     </div>
   );

@@ -98,7 +98,7 @@ const Products = () => {
     try {
       const productWithDefaultBarcode = {
         ...newProduct,
-        barcode: newProduct.barcode || 0, // Set default barcode if empty
+        barcode: newProduct.barcode , // Set default barcode if empty
       };
       const response = await API.post(
         "/products/add",
@@ -235,15 +235,14 @@ const Products = () => {
                 <Card.Body>
                   <Card.Title>المنتجات التي في المخزون المنخفض</Card.Title>
                   <Card.Text>
-                    <BsExclamationDiamondFill color="red" />
-                    هناك <strong>({lowStockProducts.length})</strong> products
-                    with stock levels below the minimum.
+                    <BsExclamationDiamondFill className="mx-1" color="red" />
+                    هناك <strong>({lowStockProducts.length})</strong> المنتجات ذات مستويات المخزون أقل من الحد الأدنى.
                   </Card.Text>
                   <Button
                     variant="primary"
                     onClick={() => setShowLowStockDetails(true)} // Show low stock details modal
                   >
-                    Show Details
+                    تفصيل اكثر
                   </Button>
                 </Card.Body>
               </Card>
@@ -255,7 +254,7 @@ const Products = () => {
                 <Card.Body>
                   <Card.Title>المنتجات التي ستنتهي صلاحيتها قريباً</Card.Title>
                   <Card.Text>
-                    <BsExclamationDiamondFill color="red" />
+                    <BsExclamationDiamondFill className="mx-1" color="red" />
                     هناك <strong>({expiringSoonProducts.length})</strong> منتجات
                     ستنتهي صلاحيتها في الشهر القادم.
                   </Card.Text>
@@ -305,9 +304,9 @@ const Products = () => {
                         "en-GB"
                       )}
                     </td>
-                    <td>
+                    <td className="d-flex  align-items-center">
                       <button
-                        className="btn btn-primary btn-sm me-2"
+                        className="btn btn-primary btn-sm me-2 mx-2"
                         onClick={() => {
                           setEditingProduct(product); // Set the product to be edited
                           setShowEditModal(true); // Open the edit modal
@@ -454,7 +453,7 @@ const Products = () => {
                 اضافة منتج
               </Button>
               <Button
-                className="mb-3"
+                className="mb-3 mx-4"
                 onClick={() => setShowBarcodeModal(true)}
               >
                 (امسح الرمز الشريطي)

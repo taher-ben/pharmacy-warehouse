@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "./sidebar"; // استيراد مكون Sidebar
-import Topbar from "./topbar";   // استيراد مكون Topbar
+import Topbar from "./topbar"; // استيراد مكون Topbar
 import API from "../services/api";
-import 'bootstrap/dist/css/bootstrap.min.css';
-import { BiX } from 'react-icons/bi';  // استيراد أيقونة BiX من مكتبة react-icons
+import "bootstrap/dist/css/bootstrap.min.css";
+import { BiX } from "react-icons/bi"; // استيراد أيقونة BiX من مكتبة react-icons
 
 const Categories = () => {
   const [categories, setCategories] = useState([]);
@@ -26,7 +26,9 @@ const Categories = () => {
       return;
     }
     try {
-      const response = await API.post("/categories/add", { name: newCategoryName });
+      const response = await API.post("/categories/add", {
+        name: newCategoryName,
+      });
       alert(response.data.message);
       setNewCategoryName(""); // إعادة تعيين الحقل
       fetchCategories(); // تحديث الفئات
@@ -41,7 +43,9 @@ const Categories = () => {
       const response = await API.delete(`/categories/${categoryId}`);
       alert(response.data.message);
       // إزالة الفئة المحذوفة من الحالة
-      setCategories(categories.filter(category => category.category_id !== categoryId));
+      setCategories(
+        categories.filter((category) => category.category_id !== categoryId)
+      );
     } catch (error) {
       console.error("خطأ في حذف الفئة:", error);
     }
@@ -52,7 +56,7 @@ const Categories = () => {
   }, []);
 
   return (
-    <div  dir="rtl" className="d-flex  min-vh-100">
+    <div dir="rtl" className="d-flex  min-vh-100">
       {/* الشريط الجانبي */}
       <Sidebar />
 
@@ -70,13 +74,10 @@ const Categories = () => {
                 type="text"
                 value={newCategoryName}
                 onChange={(e) => setNewCategoryName(e.target.value)}
-                placeholder="أدخل اسم الفئة"
+                placeholder="أدخل اسم الفئة الجديدة من فضلك."
                 className="form-control flex-grow-1"
               />
-              <button
-                onClick={addCategory}
-                className="btn btn-primary"
-              >
+              <button onClick={addCategory} className="btn mx-3 btn-primary">
                 إضافة الفئة
               </button>
             </div>
@@ -85,21 +86,30 @@ const Categories = () => {
           {/* عرض الفئات */}
           <div className="d-flex flex-wrap gap-4">
             {categories.map((category) => (
-              <div key={category.category_id} className="card position-relative" style={{ width: "300px", minHeight: "200px" }}>
+              <div
+                key={category.category_id}
+                className="card position-relative"
+                style={{ width: "300px", minHeight: "200px" }}
+              >
                 {/* العنوان مع اسم الفئة وزر الحذف */}
-                <div className="card-header text-center position-relative">
-                  <h5>{category.name}</h5>
+                <div className="card-header text-center d-flex  align-items-center">
                   <button
                     onClick={() => deleteCategory(category.category_id)}
-                    className="btn btn-sm btn-danger position-absolute top-0 end-0 m-2"
-                    style={{ fontSize: "20px", padding: "0.5rem" }}
+                    className="btn btn-sm btn-danger m-2"
+                    style={{ fontSize: "20px", height: "40px" }}
+                    title="لا يمكن حذف التصنيف إذا كان التصنيف غير فارغ."
                   >
-                    <BiX /> {/* استخدام أيقونة BiX من react-icons */}
+                    <BiX />
                   </button>
+
+                  <h5>{category.name}</h5>
                 </div>
 
                 {/* محتوى البطاقة */}
-                <div className="card-body p-3" style={{ paddingBottom: "10px" }}>
+                <div
+                  className="card-body p-3"
+                  style={{ paddingBottom: "10px" }}
+                >
                   {category.products.length > 0 ? (
                     <table className="table table-striped table-bordered">
                       <thead>
