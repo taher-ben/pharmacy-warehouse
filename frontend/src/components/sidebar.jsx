@@ -19,7 +19,7 @@ const Sidebar = () => {
   };
 
   return (
-    <div dir="rtl" className="bg-dark text-white vh-100 p-3">
+    <div dir="rtl" style={{maxheight:"200px"}} className="bg-dark position-fixed text-white vh-100 p-3  ">
       <h3 className="text-center mb-4">نظام إدارة المخازن</h3>
       <ul className="nav flex-column">
         <li className="nav-item d-flex align-items-center">
@@ -27,7 +27,7 @@ const Sidebar = () => {
           <a
             href="/dashboard"
             className="nav-link text-white"
-            onClick={(event) => handleNavigation(event, "/home")}
+            onClick={(event) => handleNavigation(event, "/")}
           >
             لوحة التحكم
           </a>
@@ -66,7 +66,7 @@ const Sidebar = () => {
         <li className="nav-item d-flex align-items-center">
           <BsPersonLinesFill className="mx-1 fs-4 center" color="white" />
           <a
-            href="#"
+            href="/suppliers"
             className="nav-link text-white"
             onClick={(event) => handleNavigation(event, "/suppliers")}
           >

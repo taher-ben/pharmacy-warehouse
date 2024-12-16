@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import Sidebar from "./sidebar";
 import Topbar from "./topbar";
+import gifbarcode from "../assets/tenor.gif"
+import { BsCardChecklist, BsBoxArrowRight , BsSearch } from "react-icons/bs";
 import API from "../services/api";
 import { Modal, Button, Form } from "react-bootstrap";
 
@@ -18,6 +20,7 @@ const Outgoing = () => {
   const barcodeRef = useRef(""); // مرجع لتخزين قيمة الباركود الممسوح
   const [searchTerm, setSearchTerm] = useState("");
   const [matchingProducts, setMatchingProducts] = useState([]);
+  const [searchQuery, setSearchQuery] = useState(""); // state for the search query
 
   const SCAN_TIMEOUT = 300;
 
@@ -54,16 +57,14 @@ const Outgoing = () => {
 
         if (response.data) {
           // تخزين المنتج في matchingProducts
-          setMatchingProducts([
-            ...matchingProducts,
-            {
-              barcode: barcode,
-              name: response.data.name,
-              expiryDate: response.data.expiry_date,
-              quantity: 1, // الكمية الافتراضية
-            },
-          ]);
-          setShowProductModal(true); // عرض مودال تفاصيل المنتج
+          setProductDetails({
+            barcode: barcode,
+            name: response.data.name,
+            expiryDate: response.data.expiry_date,
+            quantity: 1,
+          });
+
+          SetShowProductModal(true); // عرض مودال تفاصيل المنتج
         } else {
           setScanStatus("المنتج غير موجود في قاعدة البيانات.");
         }
@@ -122,6 +123,19 @@ const Outgoing = () => {
   const handleEdit = (product) => {
     setEditProduct(product);
   };
+
+  const handleSearch = (event) => {
+    setSearchQuery(event.target.value);
+  };
+
+  // Filter the scanned products based on the search query
+  const filteredProducts = scannedProducts.filter((product) => {
+    return (
+      product.product_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.barcode.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.id.toString().includes(searchQuery) // filter by ID, barcode, or product name
+    );
+  });
 
   // حفظ التعديلات
   const saveEdit = async () => {
@@ -209,105 +223,157 @@ const Outgoing = () => {
   }, [searchTerm]);
 
   return (
-    <div dir="rtl" className="p-container d-flex ">
-      <Sidebar />
-      <div className="content flex-grow-1 d-flex flex-column mx-2">
+    <div dir="rtl" className="container-fluid row">
+      <div className="col-2">
+      <Sidebar  />
+      </div>
+      <div className="content col flex-grow-1 d-flex flex-column mx-2">
         <Topbar />
         <div className="p-3">
-          <Button className="mb-3" onClick={() => setShowBarcodeModal(true)}>
-            مسح باركود المنتج
-          </Button>
-          <div className="mb-3 position-relative">
-            <Form.Control
-              type="text"
-              placeholder="البحث باسم المنتج"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            {searchTerm && (
-              <div className="position-absolute bg-white p-3 w-100 shadow-lg rounded mt-3">
-                {matchingProducts && matchingProducts.length > 0 ? (
-                  matchingProducts.map((product) => (
-                    <div
-                      key={product.id}
-                      className="d-flex align-items-center justify-content-between"
-                    >
-                      <div>{product.name}</div>
-                      <Button
-                        onClick={() => {
-                          setMatchingProducts([product]);
-                          setProductDetails(product);
-                          setShowProductModal(true);
-                          // setEditProduct(product);
-
-                          // setSearchTerm("");
-                        }}
+          <div>
+            <div className="d-flex align-items-center my-4">
+              <BsBoxArrowRight
+                style={{
+                  color: "#fff",
+                  padding: "3px 6px",
+                  fontSize: "45px",
+                  backgroundColor: "#0d6efd",
+                  borderRadius: "8px",
+                }}
+              />
+              <h3 className="mx-2">تصدير عناصر</h3>
+            </div>
+            <div className="mb-3 d-flex align-items-center position-relative   sreach-box">
+              <Form.Control
+                type="text"
+                style={{ width: "200px" }}
+                placeholder="ادخل اسم العنصر"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              {searchTerm && (
+                <div className="position-absolute top-100 bg-white p-3  shadow-lg rounded z-3 ">
+                  {matchingProducts && matchingProducts.length > 0 ? (
+                    matchingProducts.map((product) => (
+                      <div
+                        style={{ width: "200px" }}
+                        key={product.id}
+                        className="d-flex my-2  align-items-center justify-content-between"
                       >
-                        اختيار
-                      </Button>
-                    </div>
-                  ))
-                ) : (
-                  <p>لا توجد منتجات مطابقة.</p>
-                )}
+                        <div>{product.name}</div>
+                        <Button
+                          onClick={() => {
+                            setMatchingProducts([product]);
+                            setProductDetails(product);
+                            setShowProductModal(true);
+                            // setEditProduct(product);
+
+                            // setSearchTerm("");
+                          }}
+                        >
+                          اختيار
+                        </Button>
+                      </div>
+                    ))
+                  ) : (
+                    <p>لا توجد منتجات مطابقة.</p>
+                  )}
+                </div>
+              )}
+              <Button className="mx-2" onClick={handleNameSearch}>
+                <BsSearch />
+              </Button>
+              <Button className="" onClick={() => setShowBarcodeModal(true)}>
+                مسح باركود المنتج
+              </Button>
+            </div>
+            <div>
+              <div>
+                <div className="d-flex align-items-center mt-5 mb-3">
+                  <BsCardChecklist
+                    style={{
+                      color: "#fff",
+                      padding: "3px 6px",
+                      fontSize: "45px",
+                      backgroundColor: "#0d6efd",
+                      borderRadius: "8px",
+                    }}
+                  />
+                  <h3 className="mx-2 ">قائمة العناصر الصادرة</h3>
+                </div>
+                <div className="mb-3">
+                  <input
+                    type="text"
+                    style={{ width: "300px" }}
+                    className="form-control"
+                    placeholder="ابحث عن العنصر الصادر"
+                    value={searchQuery}
+                    onChange={handleSearch}
+                  />
+                </div>
               </div>
-            )}
-            <Button className="mt-2" onClick={handleNameSearch}>
-              بحث
-            </Button>
+            </div>
           </div>
           {isLoading ? (
             <p>جارٍ تحميل المنتجات الممسوحة...</p>
           ) : (
-            <table className="table table-hover">
-              <thead>
-                <tr>
-                  <th scope="col">المعرف</th>
-                  <th scope="col">الباركود</th>
-                  <th scope="col">اسم المنتج</th>
-                  <th scope="col">وقت المسح</th>
-                  <th scope="col">الكمية</th>
-                  <th scope="col">الإجراءات</th>
-                </tr>
-              </thead>
-              <tbody>
-                {scannedProducts.length === 0 ? (
+            <div
+              className="table-responsive"
+              style={{
+                maxHeight: "55vh",
+                overflowY: "auto",
+              }}
+            >
+              <table className="table table-hover">
+                <thead>
                   <tr>
-                    <td colSpan="5">لم يتم العثور على منتجات ممسوحة.</td>
+                    <th scope="col">المعرف</th>
+                    <th scope="col">الباركود</th>
+                    <th scope="col">اسم المنتج</th>
+                    <th scope="col">وقت المسح</th>
+                    <th scope="col">الكمية</th>
+                    <th scope="col">الإجراءات</th>
                   </tr>
-                ) : (
-                  scannedProducts.map((product) => (
-                    <tr key={product.id}>
-                      <td>{product.id}</td>
-                      <td>{product.barcode}</td>
-                      <td>{product.product_name}</td>
-                      <td>
-                        {new Date(product.scanned_at).toLocaleDateString(
-                          "en-US"
-                        )}
-                      </td>
-                      <td>{product.quantity}</td>
-                      <td>
-                        <Button
-                          variant="warning"
-                          onClick={() => handleEdit(product)}
-                        >
-                          تعديل
-                        </Button>{" "}
-                        <Button
-                          variant="danger"
-                          onClick={() =>
-                            handleDelete(product.id, product.barcode)
-                          }
-                        >
-                          حذف
-                        </Button>
-                      </td>
+                </thead>
+                <tbody>
+                  {scannedProducts.length === 0 ? (
+                    <tr>
+                      <td colSpan="6">لم يتم العثور على منتجات ممسوحة.</td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ) : (
+                    filteredProducts.reverse().map((product) => (
+                      <tr key={product.id}>
+                        <td>{product.id}</td>
+                        <td>{product.barcode}</td>
+                        <td>{product.product_name}</td>
+                        <td>
+                          {new Date(product.scanned_at).toLocaleDateString(
+                            "en-US"
+                          )}
+                        </td>
+                        <td>{product.quantity}</td>
+                        <td>
+                          <Button
+                            variant="warning"
+                            onClick={() => handleEdit(product)}
+                          >
+                            تعديل
+                          </Button>{" "}
+                          <Button
+                            variant="danger"
+                            onClick={() =>
+                              handleDelete(product.id, product.barcode)
+                            }
+                          >
+                            حذف
+                          </Button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       </div>
@@ -319,6 +385,7 @@ const Outgoing = () => {
         </Modal.Header>
         <Modal.Body>
           <div className="mt-2">
+            <img style={{width:"100%"}} className="text-center d-flex justify-content-center" src={gifbarcode} alt="" />
             <strong>{scanStatus}</strong>
           </div>
         </Modal.Body>

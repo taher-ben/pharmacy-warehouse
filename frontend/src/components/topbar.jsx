@@ -9,7 +9,7 @@ const Topbar = ({ onSearch }) => {
   // };
 
   return (
-    <div dir='rtl' className="navbar navbar-light bg-light d-flex justify-content-between px-3">
+    <div dir='rtl' className="navbar navbar-light bg-light d-flex justify-content-between ">
       {/* <form className="form-inline">
         <input 
           className="form-control mr-sm-2" 

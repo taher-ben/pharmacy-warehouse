@@ -39,9 +39,12 @@ function Home() {
   }, []);
 
   return (
-    <div dir="rtl" className="home-container d-flex">
+    <div className="container-fluid">
+          <div dir="rtl" className="d-flex row ">
+      <div className="col-2">
       <Sidebar />
-      <div className="content flex-grow-1 d-flex flex-column mx-2">
+      </div>
+      <div className="content col mx-2 ">
         <Topbar />
         <div className="d-flex flex-wrap justify-content-around w-100 p-3">
           <div className="col-md-3 mb-4">
@@ -73,6 +76,7 @@ function Home() {
 
         </div>
       </div>
+    </div>
     </div>
   );
 }

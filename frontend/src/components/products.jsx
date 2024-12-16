@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Sidebar from "./sidebar";
 import Topbar from "./topbar";
+import gifbarcode from "../assets/tenor.gif";
 import API from "../services/api";
 import { Modal, Button, Form, Card } from "react-bootstrap";
 import { BsExclamationDiamondFill } from "react-icons/bs";
@@ -98,7 +99,7 @@ const Products = () => {
     try {
       const productWithDefaultBarcode = {
         ...newProduct,
-        barcode: newProduct.barcode , // Set default barcode if empty
+        barcode: newProduct.barcode || Math.random(), // Set default barcode if empty
       };
       const response = await API.post(
         "/products/add",
@@ -215,360 +216,187 @@ const Products = () => {
         ...prevProduct,
         barcode, // Store scanned barcode here
       }));
-      setScanStatus("Scan Successful!");
+      setScanStatus("تم المسح بنجاح!");
+
       setShowBarcodeModal(false); // Close the barcode modal
     } else {
-      setScanStatus("No barcode detected. Please try again.");
+      setScanStatus("لم يتم اكتشاف رمز الباركود. يرجى المحاولة مرة أخرى.");
     }
   };
 
   return (
-    <div dir="rtl" className="p-container d-flex ">
-      <Sidebar />
-      <div dir="rtl" className="content flex-grow-1 d-flex flex-column mx-2">
-        <Topbar />
-        <div className="p-3">
-          <div className="d-flex">
-            {/* Low Stock Products Card */}
-            {lowStockProducts.length > 0 && (
-              <Card className="mb-4">
-                <Card.Body>
-                  <Card.Title>المنتجات التي في المخزون المنخفض</Card.Title>
-                  <Card.Text>
-                    <BsExclamationDiamondFill className="mx-1" color="red" />
-                    هناك <strong>({lowStockProducts.length})</strong> المنتجات ذات مستويات المخزون أقل من الحد الأدنى.
-                  </Card.Text>
-                  <Button
-                    variant="primary"
-                    onClick={() => setShowLowStockDetails(true)} // Show low stock details modal
-                  >
-                    تفصيل اكثر
-                  </Button>
-                </Card.Body>
-              </Card>
-            )}
-
-            {/* Expiring Soon Products Card */}
-            {expiringSoonProducts.length > 0 && (
-              <Card className="mb-4 flex-grow-1">
-                <Card.Body>
-                  <Card.Title>المنتجات التي ستنتهي صلاحيتها قريباً</Card.Title>
-                  <Card.Text>
-                    <BsExclamationDiamondFill className="mx-1" color="red" />
-                    هناك <strong>({expiringSoonProducts.length})</strong> منتجات
-                    ستنتهي صلاحيتها في الشهر القادم.
-                  </Card.Text>
-                  <Button
-                    variant="warning"
-                    onClick={() => setShowExpiringSoonDetails(true)}
-                  >
-                    تفصيل اكثر
-                  </Button>
-                </Card.Body>
-              </Card>
-            )}
-          </div>
-
-          <Button className="mb-3" onClick={() => setShowModal(true)}>
-            إضافة منتج (مسح الرمز الشريطي)
-          </Button>
-          {isLoading ? (
-            <p>Loading products...</p>
-          ) : (
-            <table className="table table-hover">
-              <thead>
-                <tr>
-                  <th scope="col">المعرف</th>
-                  <th scope="col">الاسم</th>
-                  <th scope="col">معرف الفئة</th>
-                  <th scope="col">معرف المورد</th>
-                  <th scope="col">سعر الوحدة</th>
-                  <th scope="col">الكمية في المخزن</th>
-                  <th scope="col">المخزون الحالي</th>
-                  <th scope="col">تاريخ انتهاء الصلاحية</th>
-                  <th scope="col">الإجراءات</th>
-                </tr>
-              </thead>
-              <tbody>
-                {products.map((product) => (
-                  <tr key={product.product_id}>
-                    <th scope="row">({product.barcode})</th>
-                    <td>{product.name}</td>
-                    <td>{product.category_id}</td>
-                    <td>{product.supplier_id}</td>
-                    <td>{product.unit_price}</td>
-                    <td>{product.quantity_in_stock}</td>
-                    <td>{product.current_stock}</td>
-                    <td>
-                      {new Date(product.expiry_date).toLocaleDateString(
-                        "en-GB"
-                      )}
-                    </td>
-                    <td className="d-flex  align-items-center">
-                      <button
-                        className="btn btn-primary btn-sm me-2 mx-2"
-                        onClick={() => {
-                          setEditingProduct(product); // Set the product to be edited
-                          setShowEditModal(true); // Open the edit modal
-                        }}
-                      >
-                        تعديل
-                      </button>
-                      <button
-                        className="btn btn-danger btn-sm"
-                        onClick={() => deleteProduct(product.product_id)}
-                      >
-                        مسح
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+    <div dir="rtl" className="container-fluid  ">
+      <div className="row">
+        <div className="col-2">
+          <Sidebar />
         </div>
-      </div>
+        <div
+          dir="rtl"
+          className="content col flex-grow-1 d-flex flex-column mx-2"
+        >
+          <Topbar />
+          <div className="p-3">
+            <div className="d-flex">
+              {/* Low Stock Products Card */}
+              {lowStockProducts.length > 0 && (
+                <Card className="mb-4">
+                  <Card.Body>
+                    <Card.Title>المنتجات التي في المخزون المنخفض</Card.Title>
+                    <Card.Text>
+                      <BsExclamationDiamondFill className="mx-1" color="red" />
+                      هناك <strong>({lowStockProducts.length})</strong> المنتجات
+                      ذات مستويات المخزون أقل من الحد الأدنى.
+                    </Card.Text>
+                    <Button
+                      variant="primary"
+                      onClick={() => setShowLowStockDetails(true)} // Show low stock details modal
+                    >
+                      تفصيل اكثر
+                    </Button>
+                  </Card.Body>
+                </Card>
+              )}
 
-      {/* Modal for Barcode Scanning */}
-      <Modal show={showBarcodeModal} onHide={() => setShowBarcodeModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Scan Product Barcode</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {/* No video element needed for scanner input */}
-          <div>
-            <strong>{scanStatus}</strong>
-          </div>
-          <div className="mt-2">
-            {/* Optionally, you can add instructions for the user to scan the barcode */}
-            <p>Please scan the product barcode using the scanner device.</p>
-          </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button
-            variant="secondary"
-            onClick={() => setShowBarcodeModal(false)}
-          >
-            اغلاق
-          </Button>
-        </Modal.Footer>
-      </Modal>
-
-      {/* Modal for Adding a Product */}
-      <Modal show={showModal} onHide={() => setShowModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>إضافة منتج جديد</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form>
-            <Form.Group className="mb-3">
-              <Form.Label>الاسم</Form.Label>
-              <Form.Control
-                type="text"
-                name="name"
-                value={newProduct.name}
-                onChange={handleInputChange}
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>الفئة</Form.Label>
-              <Form.Control
-                as="select"
-                name="category_id"
-                value={newProduct.category_id}
-                onChange={handleInputChange}
-              >
-                <option value="">اختر الفئة</option>
-                {categories.map((category) => (
-                  <option
-                    key={category.category_id}
-                    value={category.category_id}
-                  >
-                    {category.name}
-                  </option>
-                ))}
-              </Form.Control>
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>المورد</Form.Label>
-              <Form.Control
-                as="select"
-                name="supplier_id"
-                value={newProduct.supplier_id}
-                onChange={handleInputChange}
-              >
-                <option value="">اختر المورد</option>
-                {suppliers.map((supplier) => (
-                  <option
-                    key={supplier.supplier_id}
-                    value={supplier.supplier_id}
-                  >
-                    {supplier.name}
-                  </option>
-                ))}
-              </Form.Control>
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>سعر الوحدة</Form.Label>
-              <Form.Control
-                type="number"
-                name="unit_price"
-                value={newProduct.unit_price}
-                onChange={handleInputChange}
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>الكمية الموجودة في المخزن</Form.Label>
-              <Form.Control
-                type="number"
-                name="quantity_in_stock"
-                value={newProduct.quantity_in_stock}
-                onChange={handleInputChange}
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>الحد الأدنى للمخزون</Form.Label>
-              <Form.Control
-                type="number"
-                name="minimum_stock_level"
-                value={newProduct.minimum_stock_level}
-                onChange={handleInputChange}
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>تاريخ الانتهاء</Form.Label>
-              <Form.Control
-                type="date"
-                name="expiry_date"
-                value={newProduct.expiry_date}
-                onChange={handleInputChange}
-              />
-            </Form.Group>
-            <div className="d-flex justify-content-space-between">
-              <Button
-                className="mb-3"
-                variant="primary"
-                onClick={handleAddProduct}
-              >
-                اضافة منتج
-              </Button>
-              <Button
-                className="mb-3 mx-4"
-                onClick={() => setShowBarcodeModal(true)}
-              >
-                (امسح الرمز الشريطي)
-              </Button>
+              {/* Expiring Soon Products Card */}
+              {expiringSoonProducts.length > 0 && (
+                <Card className="mb-4 flex-grow-1">
+                  <Card.Body>
+                    <Card.Title>
+                      المنتجات التي ستنتهي صلاحيتها قريباً
+                    </Card.Title>
+                    <Card.Text>
+                      <BsExclamationDiamondFill className="mx-1" color="red" />
+                      هناك <strong>({expiringSoonProducts.length})</strong>{" "}
+                      منتجات ستنتهي صلاحيتها في الشهر القادم.
+                    </Card.Text>
+                    <Button
+                      variant="warning"
+                      onClick={() => setShowExpiringSoonDetails(true)}
+                    >
+                      تفصيل اكثر
+                    </Button>
+                  </Card.Body>
+                </Card>
+              )}
             </div>
-          </Form>
-          {errorMessage && (
-            <div className="alert alert-danger mt-3">{errorMessage}</div>
-          )}{" "}
-          {/* Display error message here */}
-        </Modal.Body>
-      </Modal>
 
-      {/* Modal for Low Stock Products Details */}
-      <Modal
-        show={showLowStockDetails}
-        onHide={() => setShowLowStockDetails(false)}
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>تفاصيل المنتجات ذات المخزون المنخفض</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {lowStockProducts.length > 0 ? (
-            <table className="table table-hover">
-              <thead>
-                <tr>
-                  <th>الاسم</th>
-                  <th>الفئة</th>
-                  <th>المورد</th>
-                  <th>الكمية</th>
-                  <th>تاريخ انتهاء الصلاحية</th>
-                </tr>
-              </thead>
-              <tbody>
-                {lowStockProducts.map((product) => (
-                  <tr key={product.product_id}>
-                    <td>{product.name}</td>
-                    <td>{product.category_id}</td>
-                    <td>{product.supplier_id}</td>
-                    <td>{product.current_stock}</td>
-                    <td>
-                      {new Date(product.expiry_date).toLocaleDateString(
-                        "en-GB"
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <p>لم يتم العثور على منتجات ذات مخزون منخفض.</p>
-          )}
-        </Modal.Body>
-      </Modal>
+            <Button className="mb-3" onClick={() => setShowModal(true)}>
+              إضافة منتج (مسح الرمز الشريطي)
+            </Button>
+            {isLoading ? (
+              <p>Loading products...</p>
+            ) : (
+              <div
+                className="table-responsive"
+                style={{
+                  maxHeight: "60vh",
+                  overflowY: "auto",
+                }}
+              >
+                <table className="table table-hover">
+                  <thead>
+                    <tr>
+                      <th scope="col">المعرف</th>
+                      <th scope="col">الاسم</th>
+                      <th scope="col">معرف الفئة</th>
+                      <th scope="col">معرف المورد</th>
+                      <th scope="col">سعر الوحدة</th>
+                      <th scope="col">الكمية في المخزن</th>
+                      <th scope="col">المخزون الحالي</th>
+                      <th scope="col">تاريخ انتهاء الصلاحية</th>
+                      <th scope="col">الإجراءات</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {products.reverse().map((product) => (
+                      <tr key={product.product_id}>
+                        <th scope="row">({product.barcode})</th>
+                        <td>{product.name}</td>
+                        <td>{product.category_id}</td>
+                        <td>{product.supplier_id}</td>
+                        <td>{product.unit_price}</td>
+                        <td>{product.quantity_in_stock}</td>
+                        <td>{product.current_stock}</td>
+                        <td>
+                          {new Date(product.expiry_date).toLocaleDateString(
+                            "en-GB"
+                          )}
+                        </td>
+                        <td className="d-flex  align-items-center">
+                          <button
+                            className="btn btn-primary btn-sm me-2 mx-2"
+                            onClick={() => {
+                              setEditingProduct(product); // Set the product to be edited
+                              setShowEditModal(true); // Open the edit modal
+                            }}
+                          >
+                            تعديل
+                          </button>
+                          <button
+                            className="btn btn-danger btn-sm"
+                            onClick={() => deleteProduct(product.product_id)}
+                          >
+                            مسح
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
 
-      {/* Modal for Expiring Soon Products */}
-      <Modal
-        show={showExpiringSoonDetails}
-        onHide={() => setShowExpiringSoonDetails(false)}
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>تفاصيل المنتجات التي ستنتهي صلاحيتها قريبًا</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {expiringSoonProducts.length > 0 ? (
-            <table className="table table-hover">
-              <thead>
-                <tr>
-                  <th>الاسم</th>
-                  <th>الفئة</th>
-                  <th>المورد</th>
-                  <th>الكمية</th>
-                  <th>تاريخ انتهاء الصلاحية</th>
-                </tr>
-              </thead>
-              <tbody>
-                {expiringSoonProducts.map((product) => (
-                  <tr key={product.product_id}>
-                    <td>{product.name}</td>
-                    <td>{product.category_id}</td>
-                    <td>{product.supplier_id}</td>
-                    <td>{product.current_stock}</td>
-                    <td>
-                      {new Date(product.expiry_date).toLocaleDateString(
-                        "en-GB"
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <p>No المنتجات التي ستنتهي صلاحيتها قريباً found.</p>
-          )}
-        </Modal.Body>
-      </Modal>
-      <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>تعديل المنتج</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {editingProduct && (
+        {/* Modal for Barcode Scanning */}
+        <Modal
+          show={showBarcodeModal}
+          onHide={() => setShowBarcodeModal(false)}
+        >
+          <Modal.Header closeButton>
+            <Modal.Title>امسح رمز الباركود للمنتج</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            {/* No video element needed for scanner input */}
+            <div>
+              <img
+                style={{ width: "100%" }}
+                className="text-center d-flex justify-content-center"
+                src={gifbarcode}
+                alt=""
+              />
+
+              <strong>{scanStatus}</strong>
+            </div>
+            <div className="mt-2">
+              {/* Optionally, you can add instructions for the user to scan the barcode */}
+              <p>يرجى مسح رمز الباركود للمنتج باستخدام جهاز الماسح.</p>
+            </div>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button
+              variant="secondary"
+              onClick={() => setShowBarcodeModal(false)}
+            >
+              اغلاق
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
+        {/* Modal for Adding a Product */}
+        <Modal show={showModal} onHide={() => setShowModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>إضافة منتج جديد</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
             <Form>
               <Form.Group className="mb-3">
                 <Form.Label>الاسم</Form.Label>
                 <Form.Control
                   type="text"
                   name="name"
-                  value={editingProduct.name}
-                  onChange={(e) =>
-                    setEditingProduct({
-                      ...editingProduct,
-                      name: e.target.value,
-                    })
-                  }
+                  value={newProduct.name}
+                  onChange={handleInputChange}
                 />
               </Form.Group>
               <Form.Group className="mb-3">
@@ -576,13 +404,8 @@ const Products = () => {
                 <Form.Control
                   as="select"
                   name="category_id"
-                  value={editingProduct.category_id}
-                  onChange={(e) =>
-                    setEditingProduct({
-                      ...editingProduct,
-                      category_id: e.target.value,
-                    })
-                  }
+                  value={newProduct.category_id}
+                  onChange={handleInputChange}
                 >
                   <option value="">اختر الفئة</option>
                   {categories.map((category) => (
@@ -600,15 +423,10 @@ const Products = () => {
                 <Form.Control
                   as="select"
                   name="supplier_id"
-                  value={editingProduct.supplier_id}
-                  onChange={(e) =>
-                    setEditingProduct({
-                      ...editingProduct,
-                      supplier_id: e.target.value,
-                    })
-                  }
+                  value={newProduct.supplier_id}
+                  onChange={handleInputChange}
                 >
-                  <option value="">Select Supplier</option>
+                  <option value="">اختر المورد</option>
                   {suppliers.map((supplier) => (
                     <option
                       key={supplier.supplier_id}
@@ -624,27 +442,17 @@ const Products = () => {
                 <Form.Control
                   type="number"
                   name="unit_price"
-                  value={editingProduct.unit_price}
-                  onChange={(e) =>
-                    setEditingProduct({
-                      ...editingProduct,
-                      unit_price: e.target.value,
-                    })
-                  }
+                  value={newProduct.unit_price}
+                  onChange={handleInputChange}
                 />
               </Form.Group>
               <Form.Group className="mb-3">
-                <Form.Label>الكمية في المخزون</Form.Label>
+                <Form.Label>الكمية الموجودة في المخزن</Form.Label>
                 <Form.Control
                   type="number"
                   name="quantity_in_stock"
-                  value={editingProduct.quantity_in_stock}
-                  onChange={(e) =>
-                    setEditingProduct({
-                      ...editingProduct,
-                      quantity_in_stock: e.target.value,
-                    })
-                  }
+                  value={newProduct.quantity_in_stock}
+                  onChange={handleInputChange}
                 />
               </Form.Group>
               <Form.Group className="mb-3">
@@ -652,36 +460,260 @@ const Products = () => {
                 <Form.Control
                   type="number"
                   name="minimum_stock_level"
-                  value={editingProduct.minimum_stock_level}
-                  onChange={(e) =>
-                    setEditingProduct({
-                      ...editingProduct,
-                      minimum_stock_level: e.target.value,
-                    })
-                  }
+                  value={newProduct.minimum_stock_level}
+                  onChange={handleInputChange}
                 />
               </Form.Group>
               <Form.Group className="mb-3">
-                <Form.Label>تاريخ انتهاء الصلاحية</Form.Label>
+                <Form.Label>تاريخ الانتهاء</Form.Label>
                 <Form.Control
                   type="date"
                   name="expiry_date"
-                  value={editingProduct.expiry_date}
-                  onChange={(e) =>
-                    setEditingProduct({
-                      ...editingProduct,
-                      expiry_date: e.target.value,
-                    })
-                  }
+                  value={newProduct.expiry_date}
+                  onChange={handleInputChange}
                 />
               </Form.Group>
-              <Button variant="primary" onClick={() => handleEditProduct()}>
-                حفظ التغييرات
-              </Button>
+              <div className="d-flex justify-content-space-between">
+                <Button
+                  className="mb-3"
+                  variant="primary"
+                  onClick={handleAddProduct}
+                >
+                  اضافة منتج
+                </Button>
+                <Button
+                  className="mb-3 mx-4"
+                  onClick={() => setShowBarcodeModal(true)}
+                >
+                  (امسح الرمز الشريطي)
+                </Button>
+              </div>
             </Form>
-          )}
-        </Modal.Body>
-      </Modal>
+            {errorMessage && (
+              <div className="alert alert-danger mt-3">{errorMessage}</div>
+            )}{" "}
+            {/* Display error message here */}
+          </Modal.Body>
+        </Modal>
+
+        {/* Modal for Low Stock Products Details */}
+        <Modal
+          show={showLowStockDetails}
+          onHide={() => setShowLowStockDetails(false)}
+        >
+          <Modal.Header closeButton>
+            <Modal.Title>تفاصيل المنتجات ذات المخزون المنخفض</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            {lowStockProducts.length > 0 ? (
+              <table className="table table-hover">
+                <thead>
+                  <tr>
+                    <th>الاسم</th>
+                    <th>الفئة</th>
+                    <th>المورد</th>
+                    <th>الكمية</th>
+                    <th>تاريخ انتهاء الصلاحية</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {lowStockProducts.map((product) => (
+                    <tr key={product.product_id}>
+                      <td>{product.name}</td>
+                      <td>{product.category_id}</td>
+                      <td>{product.supplier_id}</td>
+                      <td>{product.current_stock}</td>
+                      <td>
+                        {new Date(product.expiry_date).toLocaleDateString(
+                          "en-GB"
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <p>لم يتم العثور على منتجات ذات مخزون منخفض.</p>
+            )}
+          </Modal.Body>
+        </Modal>
+
+        {/* Modal for Expiring Soon Products */}
+        <Modal
+          show={showExpiringSoonDetails}
+          onHide={() => setShowExpiringSoonDetails(false)}
+        >
+          <Modal.Header closeButton>
+            <Modal.Title>
+              تفاصيل المنتجات التي ستنتهي صلاحيتها قريبًا
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            {expiringSoonProducts.length > 0 ? (
+              <table className="table table-hover">
+                <thead>
+                  <tr>
+                    <th>الاسم</th>
+                    <th>الفئة</th>
+                    <th>المورد</th>
+                    <th>الكمية</th>
+                    <th>تاريخ انتهاء الصلاحية</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {expiringSoonProducts.map((product) => (
+                    <tr key={product.product_id}>
+                      <td>{product.name}</td>
+                      <td>{product.category_id}</td>
+                      <td>{product.supplier_id}</td>
+                      <td>{product.current_stock}</td>
+                      <td>
+                        {new Date(product.expiry_date).toLocaleDateString(
+                          "en-GB"
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <p>No المنتجات التي ستنتهي صلاحيتها قريباً found.</p>
+            )}
+          </Modal.Body>
+        </Modal>
+        <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>تعديل المنتج</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            {editingProduct && (
+              <Form>
+                <Form.Group className="mb-3">
+                  <Form.Label>الاسم</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="name"
+                    value={editingProduct.name}
+                    onChange={(e) =>
+                      setEditingProduct({
+                        ...editingProduct,
+                        name: e.target.value,
+                      })
+                    }
+                  />
+                </Form.Group>
+                <Form.Group className="mb-3">
+                  <Form.Label>الفئة</Form.Label>
+                  <Form.Control
+                    as="select"
+                    name="category_id"
+                    value={editingProduct.category_id}
+                    onChange={(e) =>
+                      setEditingProduct({
+                        ...editingProduct,
+                        category_id: e.target.value,
+                      })
+                    }
+                  >
+                    <option value="">اختر الفئة</option>
+                    {categories.map((category) => (
+                      <option
+                        key={category.category_id}
+                        value={category.category_id}
+                      >
+                        {category.name}
+                      </option>
+                    ))}
+                  </Form.Control>
+                </Form.Group>
+                <Form.Group className="mb-3">
+                  <Form.Label>المورد</Form.Label>
+                  <Form.Control
+                    as="select"
+                    name="supplier_id"
+                    value={editingProduct.supplier_id}
+                    onChange={(e) =>
+                      setEditingProduct({
+                        ...editingProduct,
+                        supplier_id: e.target.value,
+                      })
+                    }
+                  >
+                    <option value="">Select Supplier</option>
+                    {suppliers.map((supplier) => (
+                      <option
+                        key={supplier.supplier_id}
+                        value={supplier.supplier_id}
+                      >
+                        {supplier.name}
+                      </option>
+                    ))}
+                  </Form.Control>
+                </Form.Group>
+                <Form.Group className="mb-3">
+                  <Form.Label>سعر الوحدة</Form.Label>
+                  <Form.Control
+                    type="number"
+                    name="unit_price"
+                    value={editingProduct.unit_price}
+                    onChange={(e) =>
+                      setEditingProduct({
+                        ...editingProduct,
+                        unit_price: e.target.value,
+                      })
+                    }
+                  />
+                </Form.Group>
+                <Form.Group className="mb-3">
+                  <Form.Label>الكمية في المخزون</Form.Label>
+                  <Form.Control
+                    type="number"
+                    name="quantity_in_stock"
+                    value={editingProduct.quantity_in_stock}
+                    onChange={(e) =>
+                      setEditingProduct({
+                        ...editingProduct,
+                        quantity_in_stock: e.target.value,
+                      })
+                    }
+                  />
+                </Form.Group>
+                <Form.Group className="mb-3">
+                  <Form.Label>الحد الأدنى للمخزون</Form.Label>
+                  <Form.Control
+                    type="number"
+                    name="minimum_stock_level"
+                    value={editingProduct.minimum_stock_level}
+                    onChange={(e) =>
+                      setEditingProduct({
+                        ...editingProduct,
+                        minimum_stock_level: e.target.value,
+                      })
+                    }
+                  />
+                </Form.Group>
+                <Form.Group className="mb-3">
+                  <Form.Label>تاريخ انتهاء الصلاحية</Form.Label>
+                  <Form.Control
+                    type="date"
+                    name="expiry_date"
+                    value={editingProduct.expiry_date}
+                    onChange={(e) =>
+                      setEditingProduct({
+                        ...editingProduct,
+                        expiry_date: e.target.value,
+                      })
+                    }
+                  />
+                </Form.Group>
+                <Button variant="primary" onClick={() => handleEditProduct()}>
+                  حفظ التغييرات
+                </Button>
+              </Form>
+            )}
+          </Modal.Body>
+        </Modal>
+      </div>
     </div>
   );
 };
