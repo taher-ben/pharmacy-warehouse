@@ -191,6 +191,23 @@ const Outgoing = () => {
     }
   };
 
+  // const [searchData, setSearchData] = useState([]);
+  useEffect(() => {
+    const search = async () => {
+      try {
+        const response = await API.get(`/products_name?name=${searchTerm}`);
+        if (response.data && response.data.length > 0) {
+          setMatchingProducts(response.data); // تخزين جميع المنتجات المطابقة
+          // setShowProductModal(true); // عرض المودال لاختيار المستخدم
+        }
+      } catch (error) {
+        setMatchingProducts([]);
+        // alert("لم يتم العثور على منتجات بالاسم المحدد.");
+      }
+    };
+    search();
+  }, [searchTerm]);
+
   return (
     <div dir="rtl" className="p-container d-flex ">
       <Sidebar />
@@ -200,13 +217,41 @@ const Outgoing = () => {
           <Button className="mb-3" onClick={() => setShowBarcodeModal(true)}>
             مسح باركود المنتج
           </Button>
-          <div className="mb-3">
+          <div className="mb-3 position-relative">
             <Form.Control
               type="text"
               placeholder="البحث باسم المنتج"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
+            {searchTerm && (
+              <div className="position-absolute bg-white p-3 w-100 shadow-lg rounded mt-3">
+                {matchingProducts && matchingProducts.length > 0 ? (
+                  matchingProducts.map((product) => (
+                    <div
+                      key={product.id}
+                      className="d-flex align-items-center justify-content-between"
+                    >
+                      <div>{product.name}</div>
+                      <Button
+                        onClick={() => {
+                          setMatchingProducts([product]);
+                          setProductDetails(product);
+                          setShowProductModal(true);
+                          // setEditProduct(product);
+
+                          // setSearchTerm("");
+                        }}
+                      >
+                        اختيار
+                      </Button>
+                    </div>
+                  ))
+                ) : (
+                  <p>لا توجد منتجات مطابقة.</p>
+                )}
+              </div>
+            )}
             <Button className="mt-2" onClick={handleNameSearch}>
               بحث
             </Button>
