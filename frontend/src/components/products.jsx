@@ -4,7 +4,8 @@ import Topbar from "./topbar";
 import gifbarcode from "../assets/tenor.gif";
 import API from "../services/api";
 import { Modal, Button, Form, Card } from "react-bootstrap";
-import { BsExclamationDiamondFill } from "react-icons/bs";
+import { BsExclamationDiamondFill, BsCardChecklist } from "react-icons/bs";
+const [searchQuery, setSearchQuery] = useState(""); // state for the search query
 
 const Products = () => {
   const [products, setProducts] = useState([]);
@@ -21,6 +22,8 @@ const Products = () => {
   const [showEditModal, setShowEditModal] = useState(false); // Edit modal visibility
   const [errorMessage, setErrorMessage] = useState("");
   const SCAN_TIMEOUT = 300;
+  const [searchQuery, setSearchQuery] = useState(""); // state for the search query
+
   const [newProduct, setNewProduct] = useState({
     name: "",
     category_id: "",
@@ -87,7 +90,18 @@ const Products = () => {
     fetchSuppliers();
     setIsLoading(false);
   }, []);
+  const handleSearch = (event) => {
+    setSearchQuery(event.target.value);
+  };
 
+  // Filter the scanned products based on the search query
+  const filteredProducts = scannedProducts.filter((product) => {
+    return (
+      product.product_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.barcode.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.id.toString().includes(searchQuery) // filter by ID, barcode, or product name
+    );
+  });
   // Handle input changes in the modal
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -283,6 +297,30 @@ const Products = () => {
             <Button className="mb-3" onClick={() => setShowModal(true)}>
               إضافة منتج (مسح الرمز الشريطي)
             </Button>
+            <div>
+              <div className="d-flex align-items-center mt-5 mb-3">
+                <BsCardChecklist
+                  style={{
+                    color: "#fff",
+                    padding: "3px 6px",
+                    fontSize: "45px",
+                    backgroundColor: "#0d6efd",
+                    borderRadius: "8px",
+                  }}
+                />
+                <h3 className="mx-2 ">قائمة العناصر الصادرة</h3>
+              </div>
+              <div className="mb-3">
+                <input
+                  type="text"
+                  style={{ width: "300px" }}
+                  className="form-control"
+                  placeholder="ابحث عن العنصر الصادر"
+                  value={searchQuery}
+                  onChange={handleSearch}
+                />
+              </div>
+            </div>
             {isLoading ? (
               <p>Loading products...</p>
             ) : (
