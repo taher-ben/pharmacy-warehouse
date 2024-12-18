@@ -19,7 +19,7 @@ const Sidebar = () => {
   };
 
   return (
-    <div dir="rtl" style={{maxheight:"200px"}} className="bg-dark position-fixed text-white vh-100 p-3  ">
+    <div dir="rtl"  className="bg-dark  text-white vh-100 p-3  ">
       <h3 className="text-center mb-4">نظام إدارة المخازن</h3>
       <ul className="nav flex-column">
         <li className="nav-item d-flex align-items-center">

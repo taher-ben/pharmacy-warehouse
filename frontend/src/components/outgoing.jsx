@@ -80,10 +80,6 @@ const Outgoing = () => {
     }
   };
 
-  const handleError = (err) => {
-    console.error("خطأ في مسح الباركود: ", err);
-    setScanStatus("خطأ في المسح. الرجاء التحقق من الكاميرا أو الباركود.");
-  };
 
   const scanTimeoutRef = useRef(null); // مرجع لإدارة مهلة المسح
 
@@ -227,7 +223,7 @@ const Outgoing = () => {
       <div className="col-2">
       <Sidebar  />
       </div>
-      <div className="content col flex-grow-1 d-flex flex-column mx-2">
+      <div className="content col d-flex flex-column mx-2 overflow-y-scroll">
         <Topbar />
         <div className="p-3">
           <div>

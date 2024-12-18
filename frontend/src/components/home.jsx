@@ -40,17 +40,17 @@ function Home() {
 
   return (
     <div className="container-fluid">
-          <div dir="rtl" className="d-flex row ">
+          <div dir="rtl" className="d-flex">
       <div className="col-2">
       <Sidebar />
       </div>
-      <div className="content col mx-2 ">
+      <div className="content col mx-2 container">
         <Topbar />
-        <div className="d-flex flex-wrap justify-content-around w-100 p-3">
+        <div className="d-flex flex-wrap justify-content-around container w-100 p-3">
           <div className="col-md-3 mb-4">
             <div className="card shadow-lg border-0 text-white rounded box-items">
               <div className="card-body text-center">
-                <h6 className="font-semibold text-sm text-white">جميع الادوية</h6>
+                <h6 className="font-semibold text-sm text-white">جميع العناصر</h6>
                 <h3 className="font-bold">{allProducts.length}</h3>
               </div>
             </div>
@@ -59,7 +59,7 @@ function Home() {
           <div className="col-md-3 mb-4">
             <div className="card shadow-lg box-items text-white border-0 rounded">
               <div className="card-body text-center">
-                <h6 className="font-semibold text-sm text-white">الأدوية القريبة من انتهاء الصلاحية</h6>
+                <h6 className="font-semibold text-sm text-white">منتجات القريبة من انتهاء الصلاحية</h6>
                 <h3 className="font-bold">{expiringProducts.length}</h3>
               </div>
             </div>

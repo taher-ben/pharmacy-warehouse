@@ -4,8 +4,7 @@ import Topbar from "./topbar";
 import gifbarcode from "../assets/tenor.gif";
 import API from "../services/api";
 import { Modal, Button, Form, Card } from "react-bootstrap";
-import { BsExclamationDiamondFill, BsCardChecklist } from "react-icons/bs";
-const [searchQuery, setSearchQuery] = useState(""); // state for the search query
+import { BsExclamationDiamondFill, BsCardChecklist , BsReplyAll , BsExclamationCircle } from "react-icons/bs";
 
 const Products = () => {
   const [products, setProducts] = useState([]);
@@ -22,7 +21,7 @@ const Products = () => {
   const [showEditModal, setShowEditModal] = useState(false); // Edit modal visibility
   const [errorMessage, setErrorMessage] = useState("");
   const SCAN_TIMEOUT = 300;
-  const [searchQuery, setSearchQuery] = useState(""); // state for the search query
+  const [searchQuery, setSearchQuery] = useState("");
 
   const [newProduct, setNewProduct] = useState({
     name: "",
@@ -90,18 +89,20 @@ const Products = () => {
     fetchSuppliers();
     setIsLoading(false);
   }, []);
+
   const handleSearch = (event) => {
     setSearchQuery(event.target.value);
   };
 
   // Filter the scanned products based on the search query
-  const filteredProducts = scannedProducts.filter((product) => {
-    return (
-      product.product_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.barcode.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.id.toString().includes(searchQuery) // filter by ID, barcode, or product name
-    );
-  });
+  const filteredProducts = products.filter((product) => {
+  return (
+    product.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    product.barcode?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    product.id?.toString().includes(searchQuery) // filter by ID, barcode, or product name
+  );
+});
+
   // Handle input changes in the modal
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -239,66 +240,94 @@ const Products = () => {
   };
 
   return (
-    <div dir="rtl" className="container-fluid  ">
-      <div className="row">
+    <div dir="rtl" className="container-fluid ">
+      <div className="d-flex">
         <div className="col-2">
           <Sidebar />
         </div>
         <div
           dir="rtl"
-          className="content col flex-grow-1 d-flex flex-column mx-2"
+          className=" col overflow-y-scroll  d-flex flex-column mx-2"
         >
+          <div>
           <Topbar />
+          </div>
+          <div className="d-flex align-items-center px-4">
+            <BsExclamationCircle  style={{
+                    color: "#000",
+                    padding: "3px 6px",
+                    fontSize: "45px",
+                    borderRadius: "8px",
+                  }} />
+          <h3 className="">مخزون منخفض او قريب انتهاء الصلاحية</h3>
+          </div>
           <div className="p-3">
-            <div className="d-flex">
-              {/* Low Stock Products Card */}
-              {lowStockProducts.length > 0 && (
-                <Card className="mb-4">
-                  <Card.Body>
-                    <Card.Title>المنتجات التي في المخزون المنخفض</Card.Title>
-                    <Card.Text>
-                      <BsExclamationDiamondFill className="mx-1" color="red" />
-                      هناك <strong>({lowStockProducts.length})</strong> المنتجات
-                      ذات مستويات المخزون أقل من الحد الأدنى.
-                    </Card.Text>
-                    <Button
-                      variant="primary"
-                      onClick={() => setShowLowStockDetails(true)} // Show low stock details modal
-                    >
-                      تفصيل اكثر
-                    </Button>
-                  </Card.Body>
-                </Card>
-              )}
+            <div className="d-flex border-bottom border-secondary">
+            {lowStockProducts.length === 0 && expiringSoonProducts.length === 0 ? (
+    <div className="text-center">
+      <h4>لا توجد تقارير</h4>
+    </div>
+  ) : (
+    
+    // Display cards if one or both arrays have data
+    <div className="d-flex">
+      {/* Low Stock Products Card */}
+      {lowStockProducts.length > 0 && (
+        <Card className="mb-4">
+          <Card.Body>
+            <Card.Title>المنتجات التي في المخزون المنخفض</Card.Title>
+            <Card.Text>
+              <BsExclamationDiamondFill className="mx-1" color="red" />
+              هناك <strong>({lowStockProducts.length})</strong> المنتجات ذات مستويات المخزون أقل من الحد الأدنى.
+            </Card.Text>
+            <Button
+              variant="primary"
+              onClick={() => setShowLowStockDetails(true)} // Show low stock details modal
+            >
+              تفصيل اكثر
+            </Button>
+          </Card.Body>
+        </Card>
+      )}
 
-              {/* Expiring Soon Products Card */}
-              {expiringSoonProducts.length > 0 && (
-                <Card className="mb-4 flex-grow-1">
-                  <Card.Body>
-                    <Card.Title>
-                      المنتجات التي ستنتهي صلاحيتها قريباً
-                    </Card.Title>
-                    <Card.Text>
-                      <BsExclamationDiamondFill className="mx-1" color="red" />
-                      هناك <strong>({expiringSoonProducts.length})</strong>{" "}
-                      منتجات ستنتهي صلاحيتها في الشهر القادم.
-                    </Card.Text>
-                    <Button
-                      variant="warning"
-                      onClick={() => setShowExpiringSoonDetails(true)}
-                    >
-                      تفصيل اكثر
-                    </Button>
-                  </Card.Body>
-                </Card>
-              )}
+      {/* Expiring Soon Products Card */}
+      {expiringSoonProducts.length > 0 && (
+        <Card className="mb-4 flex-grow-1">
+          <Card.Body>
+            <Card.Title>المنتجات التي ستنتهي صلاحيتها قريباً</Card.Title>
+            <Card.Text>
+              <BsExclamationDiamondFill className="mx-1" color="red" />
+              هناك <strong>({expiringSoonProducts.length})</strong> منتجات ستنتهي صلاحيتها في الشهر القادم.
+            </Card.Text>
+            <Button
+              variant="warning"
+              onClick={() => setShowExpiringSoonDetails(true)}
+            >
+              تفصيل اكثر
+            </Button>
+          </Card.Body>
+        </Card>
+      )}
+    </div>
+  )}
             </div>
+            <div className="border-bottom border-secondary py-2 bg-secondary-subtle">
+              <div className="d-flex align-items-center">
+                <BsReplyAll                   style={{
+                    color: "#000",
+                    padding: "3px 6px",
+                    fontSize: "45px",
+                    borderRadius: "8px",
+                  }}/>
+              <h3> إضافة عنصر وارد </h3>
 
+              </div>
             <Button className="mb-3" onClick={() => setShowModal(true)}>
               إضافة منتج (مسح الرمز الشريطي)
             </Button>
+            </div>
             <div>
-              <div className="d-flex align-items-center mt-5 mb-3">
+              <div className="d-flex align-items-center my-3">
                 <BsCardChecklist
                   style={{
                     color: "#fff",
@@ -308,14 +337,14 @@ const Products = () => {
                     borderRadius: "8px",
                   }}
                 />
-                <h3 className="mx-2 ">قائمة العناصر الصادرة</h3>
+                <h3 className="mx-2 ">قائمة العناصر الواردة</h3>
               </div>
-              <div className="mb-3">
+              <div className="">
                 <input
                   type="text"
                   style={{ width: "300px" }}
                   className="form-control"
-                  placeholder="ابحث عن العنصر الصادر"
+                  placeholder="ابحث عن العنصر الوارد"
                   value={searchQuery}
                   onChange={handleSearch}
                 />
@@ -346,7 +375,7 @@ const Products = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {products.reverse().map((product) => (
+                    {filteredProducts.reverse().map((product) => (
                       <tr key={product.product_id}>
                         <th scope="row">({product.barcode})</th>
                         <td>{product.name}</td>
