@@ -19,9 +19,9 @@ const Sidebar = () => {
   };
 
   return (
-    <div dir="rtl"  className="bg-dark  text-white vh-100 p-3  ">
+    <div dir="rtl" className="bg-dark  text-white h-100 min-vh-100 p-3 lg:p-5">
       <h3 className="text-center mb-4">نظام إدارة المخازن</h3>
-      <ul className="nav flex-column">
+      <ul className="nav flex-column p-0">
         <li className="nav-item d-flex align-items-center">
           <BsHouse className="mx-1 fs-4" color="white" />
           <a
@@ -54,7 +54,7 @@ const Sidebar = () => {
           </a>
         </li>
         <li className="nav-item d-flex align-items-center">
-        <BsBoxArrowInLeft className="mx-1 fs-4 center" color="white" />
+          <BsBoxArrowInLeft className="mx-1 fs-4 center" color="white" />
           <a
             href="/products/incoming"
             className="nav-link text-white"
