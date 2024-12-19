@@ -4,7 +4,12 @@ import { logout } from "../store/authSlice"; // استدعاء دالة logout �
 
 const API = axios.create({
   baseURL: "http://localhost:8081/api",
-  headers: { Authorization: `Bearer ${store.getState().auth.token}` },
+});
+
+API.interceptors.request.use((config) => {
+  const { token } = store.getState().auth;
+  if (config.url !== "/login") config.headers.Authorization = `Bearer ${token}`;
+  return config;
 });
 
 // إعداد interceptor للاستجابات
@@ -18,6 +23,7 @@ API.interceptors.response.use(
       error.response &&
       (error.response.status === 401 || error.response.status === 403)
     ) {
+      console.log("error from response");
       // تنفيذ عملية تسجيل الخروج عبر Redux
       store.dispatch(logout());
       console.error("Unauthorized or forbidden. Logging out.");

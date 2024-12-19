@@ -1,16 +1,20 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice } from "@reduxjs/toolkit";
+import { redirect } from "react-router-dom";
 
 const authSlice = createSlice({
-  name: 'auth',
+  name: "auth",
   initialState: { token: localStorage.getItem("token") || null },
   reducers: {
     login: (state, action) => {
       state.token = action.payload;
-      localStorage.setItem("token",action.payload)
+      localStorage.setItem("token", action.payload);
     },
     logout: (state) => {
       state.token = null;
-      localStorage.setItem("token",undefined);
+      setTimeout(() => {
+        localStorage.removeItem("token");
+        redirect("/login");
+      }, 1000);
     },
   },
 });
