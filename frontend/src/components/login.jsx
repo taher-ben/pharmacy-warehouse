@@ -34,7 +34,7 @@ const Login = () => {
       dispatch(login(response.data?.token));
       alert("تم تسجيل الدخول بنجاح");
       setTimeout(() => {
-        navigate("/");
+        navigate("/home");
       }, 1000);
     } catch (error) {
       if (error.response?.status === 401) {

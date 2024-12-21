@@ -1,0 +1,24 @@
+.nav-item:hover{
+    background-color: rgb(212, 212, 212);
+    color: #212529;
+    transition: 0.2s ease-in-out;
+
+}
+
+.nav-item:hover a{
+    color: #212529;
+    transition: 0.2s ease-in-out;
+}
+
+.nav-item a{
+    color: white;
+}
+
+.nav-item:hover button{
+    color: #212529;
+    transition: 0.2s ease-in-out;
+}
+
+.nav-item button{
+    color: white;
+}
