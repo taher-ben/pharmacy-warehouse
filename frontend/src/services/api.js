@@ -3,7 +3,7 @@ import store from "../store";
 import { logout } from "../store/authSlice"; // استدعاء دالة logout من Redux
 
 const API = axios.create({
-  baseURL: "http://localhost:8081/api",
+  baseURL: "http://192.168.1.250:8081/api",
 });
 
 API.interceptors.request.use((config) => {

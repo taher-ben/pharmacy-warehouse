@@ -4,6 +4,7 @@ import Sidebar from "./sidebar";
 import Topbar from "./topbar";
 import API from "../services/api";
 import { BsFilePerson, BsTelephone , BsGeoAlt } from "react-icons/bs";
+import Swal from 'sweetalert2'
 
 const Suppliers = () => {
   const [suppliers, setSuppliers] = useState([]);
@@ -28,12 +29,20 @@ const Suppliers = () => {
   // إضافة مزود جديد
   const addSupplier = async () => {
     if (!newSupplier.name || !newSupplier.contact || !newSupplier.address) {
-      alert("جميع الحقول مطلوبة!");
+      Swal.fire({
+        title: "تحذير",
+        text: "جميع الحقول مطلوبة",
+        icon: "warning"
+      });
       return;
     }
     try {
       const response = await API.post("/suppliers", newSupplier);
-      alert(response.data.message || "تم إضافة المزود بنجاح");
+      Swal.fire({
+        title: "تمت العملية بنجاح",
+        text: response.data.message || "تم إضافة المزود بنجاح",
+        icon: "success"
+      });
       setNewSupplier({ name: "", contact: "", address: "" });
       fetchSuppliers();
     } catch (error) {
@@ -48,7 +57,11 @@ const Suppliers = () => {
 
   const updateSupplier = async () => {
     if (!editSupplier.name || !editSupplier.contact || !editSupplier.address) {
-      alert("جميع الحقول مطلوبة!");
+      Swal.fire({
+        title: "تحذير",
+        text: "جميع الحقول مطلوبة",
+        icon: "warning"
+      });
       return;
     }
     try {
@@ -56,7 +69,11 @@ const Suppliers = () => {
         `/suppliers/${editSupplier.supplier_id}`,
         editSupplier
       );
-      alert(response.data.message || "تم تحديث المزود بنجاح");
+      Swal.fire({
+        title: "تمت العملية بنجاح",
+        text: response.data.message || "تم تحديث بيانات المزود بنجاح",
+        icon: "success"
+      });
       setEditSupplier(null); // إغلاق نموذج التحرير
       fetchSuppliers();
     } catch (error) {
@@ -66,17 +83,40 @@ const Suppliers = () => {
 
   // حذف مزود
   const deleteSupplier = async (id) => {
-    if (window.confirm("هل أنت متأكد من أنك تريد حذف هذا المزود؟")) {
+    Swal.fire({
+        title: "هل أنت متأكد أنك تريد حذف هذا المنتج؟",
+        text: "لن تتمكن من التراجع عن هذا الإجراء!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "نعم، احذفه!",
+        cancelButtonText: "إلغاء"
+      })
+      .then(async (result) => {
+        if (result.isConfirmed) {
       try {
         await API.delete(`/suppliers/${id}`);
         setSuppliers(
           suppliers.filter((supplier) => supplier.supplier_id !== id)
         );
+         // عرض رسالة النجاح بعد الحذف
+                Swal.fire({
+                  title: "تم الحذف!",
+                  text: "تم حذف العنصر بنجاح.",
+                  icon: "success"
+                });
       } catch (error) {
         console.error("خطأ أثناء حذف المزود:", error);
+         Swal.fire({
+                  title: "خطأ!",
+                  text: "حدث خطأ أثناء الحذف. يرجى المحاولة مرة أخرى.",
+                  icon: "error"
+                });
       }
     }
-  };
+  });
+};
 
   useEffect(() => {
     fetchSuppliers();

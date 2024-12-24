@@ -13,6 +13,7 @@ import API from "../services/api"; // تأكد من أن ملف API يرسل ا�
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { login, logout } from "../store/authSlice";
+import Swal from 'sweetalert2'
 const Login = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -32,7 +33,6 @@ const Login = () => {
     try {
       const response = await API.post("/login", { username, password });
       dispatch(login(response.data?.token));
-      alert("تم تسجيل الدخول بنجاح");
       setTimeout(() => {
         navigate("/home");
       }, 1000);

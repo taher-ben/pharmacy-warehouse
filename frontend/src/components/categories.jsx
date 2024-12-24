@@ -3,6 +3,7 @@ import Sidebar from "./sidebar"; // استيراد مكون Sidebar
 import Topbar from "./topbar"; // استيراد مكون Topbar
 import API from "../services/api";
 import "bootstrap/dist/css/bootstrap.min.css";
+import Swal from 'sweetalert2'
 import { BiX } from "react-icons/bi";
 
 const Categories = () => {
@@ -22,14 +23,23 @@ const Categories = () => {
   // إضافة فئة جديدة
   const addCategory = async () => {
     if (!newCategoryName.trim()) {
-      alert("لا يمكن أن يكون اسم الفئة فارغاً!");
+      Swal.fire({
+        title: "تحذير",
+        text: "لا يمكن ترك اسم الفئة فارغا",
+        icon: "warning"
+      });
       return;
     }
     try {
       const response = await API.post("/categories/add", {
         name: newCategoryName,
       });
-      alert(response.data.message);
+      const message = response.data.message;
+      Swal.fire({
+        title: "تمت العملية بنجاح",
+        text: message,
+        icon: "success"
+      });
       setNewCategoryName(""); // إعادة تعيين الحقل
       fetchCategories(); // تحديث الفئات
     } catch (error) {
@@ -41,7 +51,12 @@ const Categories = () => {
   const deleteCategory = async (categoryId) => {
     try {
       const response = await API.delete(`/categories/${categoryId}`);
-      alert(response.data.message);
+      const message = response.data.message;
+      Swal.fire({
+        title: " رسالة",
+        text: message,
+        icon: "question"
+      });
       // إزالة الفئة المحذوفة من الحالة
       setCategories(
         categories.filter((category) => category.category_id !== categoryId)

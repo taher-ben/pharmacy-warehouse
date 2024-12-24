@@ -5,6 +5,7 @@ import gifbarcode from "../assets/tenor.gif"
 import { BsCardChecklist, BsBoxArrowRight , BsSearch } from "react-icons/bs";
 import API from "../services/api";
 import { Modal, Button, Form } from "react-bootstrap";
+import Swal from 'sweetalert2'
 
 const Outgoing = () => {
   const [scannedProducts, setScannedProducts] = useState([]); // حالة للمنتجات الممسوحة
@@ -137,7 +138,11 @@ const Outgoing = () => {
   const saveEdit = async () => {
     try {
       await API.put(`/scanned_products/${editProduct.id}`, editProduct);
-      alert("تم تحديث المنتج بنجاح!");
+      Swal.fire({
+        title: "نجحت العملية",
+        text: "تم تحديث المنتج بنجاح",
+        icon: "success"
+      });
       setEditProduct(null);
       const updatedProducts = await API.get("/scanned_products");
       setScannedProducts(updatedProducts.data);
@@ -148,21 +153,48 @@ const Outgoing = () => {
   };
 
   // معالجة حذف المنتج
-  const handleDelete = async (id, barcode) => {
-    if (window.confirm("هل أنت متأكد أنك تريد حذف هذا المنتج؟")) {
+const handleDelete = async (id, barcode) => {
+  Swal.fire({
+    title: "هل أنت متأكد أنك تريد حذف هذا المنتج؟",
+    text: "لن تتمكن من التراجع عن هذا الإجراء!",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#3085d6",
+    cancelButtonColor: "#d33",
+    confirmButtonText: "نعم، احذفه!",
+    cancelButtonText: "إلغاء"
+  }).then(async (result) => {
+    if (result.isConfirmed) {
       try {
         // إرسال طلب DELETE مع الباركود كمعامل استعلام
         await API.delete(`/scanned_products/${id}?barcode=${barcode}`);
-
+        
         // تحديث الحالة لإزالة المنتج المحذوف
         setScannedProducts(
           scannedProducts.filter((product) => product.id !== id)
         );
+
+        // عرض رسالة النجاح بعد الحذف
+        Swal.fire({
+          title: "تم الحذف!",
+          text: "تم حذف العنصر بنجاح.",
+          icon: "success"
+        });
       } catch (error) {
         console.error("خطأ أثناء حذف المنتج:", error);
+        Swal.fire({
+          title: "خطأ!",
+          text: "حدث خطأ أثناء الحذف. يرجى المحاولة مرة أخرى.",
+          icon: "error"
+        });
       }
     }
-  };
+  });
+};
+
+    
+      
+  
 
   // وظيفة لحفظ المنتج الممسوح (أي إضافة مسح جديد إلى قاعدة البيانات)
   const saveScannedProduct = async () => {
@@ -174,7 +206,11 @@ const Outgoing = () => {
         scanned_at: new Date(), // اختيارياً، إرسال توقيت المسح
       });
 
-      alert("تم إضافة المنتج بنجاح!");
+      Swal.fire({
+        title: "نجحت العملية",
+        text: "تم اضافة المنتج بنجاح",
+        icon: "success"
+      });
       SetShowProductModal(false); // إغلاق المودال
 
       // اختيارياً، تحديث قائمة المنتجات إذا لزم الأمر
@@ -193,11 +229,19 @@ const Outgoing = () => {
         setMatchingProducts(response.data); // تخزين جميع المنتجات المطابقة
         setShowProductModal(true); // عرض المودال لاختيار المستخدم
       } else {
-        alert("لم يتم العثور على منتجات بالاسم المحدد.");
+        Swal.fire({
+          title: "فشل",
+          text: "لم يتم العثور على منتج مطابق",
+          icon: "error"
+        });
       }
     } catch (error) {
       console.error("خطأ أثناء البحث عن المنتجات بالاسم:", error);
-      alert("حدث خطأ أثناء البحث عن المنتجات.");
+      Swal.fire({
+        title: "فشل",
+        text: "خطأ أثناء البحث عن المنتجات بالاسم",
+        icon: "error"
+      });
     }
   };
 
@@ -262,14 +306,14 @@ const Outgoing = () => {
                             setMatchingProducts([product]);
                             setProductDetails(product);
                             setShowProductModal(true);
+                            
                             // setEditProduct(product);
-
-                            // setSearchTerm("");
                           }}
                         >
                           اختيار
                         </Button>
-                      </div>
+                        
+                      </div >
                     ))
                   ) : (
                     <p>لا توجد منتجات مطابقة.</p>

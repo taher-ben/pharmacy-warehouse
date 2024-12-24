@@ -5,6 +5,7 @@ import gifbarcode from "../assets/tenor.gif";
 import API from "../services/api";
 import { Modal, Button, Form, Card } from "react-bootstrap";
 import { BsExclamationDiamondFill, BsCardChecklist, BsReplyAll, BsExclamationCircle } from "react-icons/bs";
+import Swal from 'sweetalert2'
 
 const Products = () => {
   const [products, setProducts] = useState([]);
@@ -153,17 +154,42 @@ const Products = () => {
     }
   };
 
-  // Delete a product
-  const deleteProduct = async (productId) => {
-    try {
-      await API.delete(`/products/delete/${productId}`);
-      setProducts(
-        products.filter((product) => product.product_id !== productId)
-      );
-    } catch (error) {
-      console.error("Error deleting product:", error);
+ // Delete a product
+const deleteProduct = async (productId) => {
+  Swal.fire({
+    title: "هل أنت متأكد أنك تريد حذف هذا المنتج؟",
+    text: "لن تتمكن من التراجع عن هذا الإجراء!",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#3085d6",
+    cancelButtonColor: "#d33",
+    confirmButtonText: "نعم، احذفه!",
+    cancelButtonText: "إلغاء"
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try {
+        await API.delete(`/products/delete/${productId}`);
+        setProducts(
+          products.filter((product) => product.product_id !== productId)
+        );
+        // عرض رسالة النجاح بعد الحذف
+        Swal.fire({
+          title: "تم الحذف!",
+          text: "تم حذف العنصر بنجاح.",
+          icon: "success"
+        });
+      } catch (error) {
+        console.error("Error deleting product:", error);
+        Swal.fire({
+          title: "خطأ!",
+          text: "حدث خطأ أثناء الحذف. يرجى المحاولة مرة أخرى.",
+          icon: "error"
+        });
+      }
     }
-  };
+  });
+};
+
 
   const handleEditProduct = async () => {
     try {
